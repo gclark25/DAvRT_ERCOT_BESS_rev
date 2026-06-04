@@ -16,9 +16,6 @@ of ERCOT's raw column names:
   prices : [settlement_point, ts_hour, ts_interval, da_price, rt_price]
   positions: [resource_name, settlement_point, ts_hour, ts_interval,
               da_award_mw, rt_dispatch_mw]
-
-`normalize_*` adapters map raw API/disclosure columns into this schema; they are
-confirmed against live data on first run. `settle()` is fully unit-tested.
 """
 from __future__ import annotations
 
@@ -28,15 +25,8 @@ RT_INTERVAL_HOURS = 0.25  # 15-minute RT settlement intervals
 
 
 def settle(positions: pd.DataFrame, prices: pd.DataFrame) -> pd.DataFrame:
-    """Compute DA, RT, and total revenue per resource per 15-min interval.
-
-    positions: resource_name, settlement_point, ts_hour, ts_interval,
-               da_award_mw, rt_dispatch_mw
-    prices:    settlement_point, ts_hour, ts_interval, da_price, rt_price
-
-    Returns one row per resource x interval with da_rev, rt_rev, total_rev.
-    """
-   df = positions.merge(
+    """Compute DA, RT, and total revenue per resource per 15-min interval."""
+    df = positions.merge(
         prices,
         on=["settlement_point", "ts_hour", "ts_interval"],
         how="left",
