@@ -1,229 +1,229 @@
-name,owner,resource_name,settlement_point,nameplate_mw,load_zone,company
-Catarina (DGR),HEN,CATARINA_BESS,CATARINA_B1,9.9,south,Hunt Energy Network
-Cedarvale (DGR),HEN,CEDRVALE_BESS,CEDRVALE_RN,9.9,west,Hunt Energy Network
-Cisco,HEN,CISC_BESS,CISC_RN,9.9,north,Hunt Energy Network
-Coyote Springs,HEN,COYOTSPR_BESS,COYOTSPR_RN,9.9,west,Hunt Energy Network
-Diboll (DGR),HEN,DIBOL_BESS,DIBOL_RN,9.9,north,Hunt Energy Network
-Falfurrias,HEN,FALFUR_BESS,FALFUR_RN,9.9,south,Hunt Energy Network
-Farmersville (DGR),HEN,FRMRSVLW_BESS,FRMRSVLW_RN,9.9,north,Hunt Energy Network
-Faulkner (DGR),HEN,FAULKNER_BESS,FAULKNER_RN,9.9,west,Hunt Energy Network
-Fort Duncan,HEN,FTDUNCAN_BESS_GEN,FTDUNCAN_RN,100.0,south,Hunt Energy Network
-Garden City East (DGR),HEN,GRDNE_BESS,GRDNE_ESR_RN,9.9,west,Hunt Energy Network
-Gomez (DGR),HEN,GOMZ_BESS,GOMZ_RN,9.9,west,Hunt Energy Network
-Hamilton (DGR) U1,HEN,HAMILTON_BESS,HAMI_BESS_RN,9.95,west,Hunt Energy Network
-Holcomb (DGR),HEN,HOLCOMB_BESS,HOLCOMB_RN1,9.9,south,Hunt Energy Network
-Judkins (DGR),HEN,JDKNS_BESS,JDKNS_RN,9.9,west,Hunt Energy Network
-Junction (DGR),HEN,JUNCTION_BESS,JUNCTION_RN,9.9,south,Hunt Energy Network
-Lonestar,HEN,LONESTAR_BESS,LONESTAR_RN,9.95,west,Hunt Energy Network
-Lufkin South (DGR),HEN,LFSTH_BESS,LFSTH_RN,9.9,north,Hunt Energy Network
-Mainland (DGR),HEN,MAINLAND_BESS,MAINLAND_RN,9.9,houston,Hunt Energy Network
-Mineral Wells East (DGR),HEN,MNWLE_BESS,MNWL_BESS_RN,9.9,north,Hunt Energy Network
-Olney (DGR),HEN,OLNEYTN_BESS,OLNEYTN_RN,9.9,north,Hunt Energy Network
-Pauline (DGR),HEN,PAULN_BESS,PAULN_RN,9.95,north,Hunt Energy Network
-Pavlov,HEN,PAVLOV_BESS,PAVLOV_BT_RN,9.9,houston,Hunt Energy Network
-Rattlesnake (DGR),HEN,RTLSNAKE_BESS,RTLSNAKE_BT,9.9,west,Hunt Energy Network
-Russek Street,HEN,RUSSEKST_BESS,RUSSEKST_RN,9.9,west,Hunt Energy Network
-Saddleback (DGR),HEN,SADLBACK_BESS,SADLBACK_RN,9.9,west,Hunt Energy Network
-Sandlake,HEN,SANDLAKE_BESS,SANDLAKE_RN,9.9,west,Hunt Energy Network
-Screwbean (DGR),HEN,SBEAN_BESS,SBEAN_BESS,9.9,west,Hunt Energy Network
-Toyah Power Station (DGR),HEN,CHERRYCR_BESS,TOYAH_RN,10.4,west,Hunt Energy Network
-Tynan,HEN,TYNAN_BESS1,TYNAN_RN,9.9,south,Hunt Energy Network
-Val Verde,HEN,MV_VALV4_BESS,MV_VALV4_RN,10.0,south,Hunt Energy Network
-Weil Tract,HEN,WEIL_TRC_BESS,WLTC_ESR_RN,9.9,south,Hunt Energy Network
-Adlong,PEER,ADL1_BESS1,ADL_RN,60.0,,Brookfield Renewable
-Al Pastor,PEER,ALP_BESS_BESS1,ALP_BESS_RN,103.1,west,UBS Asset Management
-Alvin (DGR),PEER,ALVIN_UNIT1,ALVIN_RN,10.0,houston,ENGIE
-Anchor 1,PEER,ANCHOR_BESS1,ANCHOR_ALL,35.2,north,Enel North America
-Anchor 2,PEER,ANCHOR_BESS2,ANCHOR_ALL,36.3,north,Enel North America
-Andromeda 1 (SLF),PEER,ANDMDSLR_BESS1,ANDMDSLR_ALL,82.0,west,IPX Power
-Andromeda 2 (SLF),PEER,ANDMDSLR_BESS2,ANDMDSLR_ALL,78.0,west,IPX Power
-Anemoi,PEER,ANEM_ESS_BESS1,ANEM_ESS_RN,205.0,south,Plus Power
-Angelo,PEER,ANG_SLR_BESS1,ANG_ALL,103.0,west,Apex Clean Energy
-Angleton,PEER,AE_BESS,AE_RN,9.9,houston,On.Energy
-Anole,PEER,ANOL_ESS_BES1,ANOL_ESS_RN,247.1,north,esVolta
-Antila,PEER,ANTL_ESS_BES1,ANTL_ESS_ES1,72.38,south,ENGIE
-Avila,PEER,AVIL_ESS_BES1,AVIL_ESS_RN,160.0,west,ENGIE
-Azure Sky Solar,PEER,AZURE_BESS1,AZURE_RN,77.6,west,Enel North America
-Azure Sky Wind,PEER,VORTEX_BESS1,VORT_ALL_RN,121.8,north,Enel North America
-BRP Angleton (DGR),PEER,ANGLETON_UNIT1,BRPANGLE_RN,10.0,houston,ENGIE
-Bat Cave,PEER,BATCAVE_BES1,BATCAVE_RN,100.5,south,ENGIE
-Bay City,PEER,BAY_CITY_BESS,BAYC_BESS_RN,9.9,houston,SMT Energy
-Black Springs,PEER,BLACKSPR_UNIT1,BLACKSPR_RN,120.0,,Brookfield Renewable
-Blue Jay,PEER,BLUEJAY_BESS1,BLUEJAY_RN,50.0,north,Enel North America
-Blue Summit,PEER,BLSUMMIT_BATTERY,BLSMT1_5_A_6,30.0,west,NextEra Energy Resources
-BoCo,PEER,BOCO_ESS_ESS1,BOCO_ESS_RN,154.0,west,Aypa Power
-Bocanova,PEER,BCNV_ESS_BESS1,BCNV_RN,150.0,houston,Nightpeak Energy
-Brazoria (DGR),PEER,BRAZORIA_UNIT1,BRP_BRAZ_RN,10.0,houston,ENGIE
-Bright Arrow U1,PEER,BR_ARROW_BESS1,BR_ARROW_ALL,49.3,north,RWE
-Bright Arrow U2,PEER,BR_ARROW_BESS2,BR_ARROW_ALL,52.8,north,RWE
-Burksol,PEER,BKSL_ESS_BESS1,BKSL_RN,103.0,west,esVolta
-Byrd Ranch,PEER,BYRDR_ES_BESS1,BYRDR_ES_ALL,50.0,houston,GlidePath
-Cachi,PEER,CACH_ESS_BESS1,CACH_ESS_RN,200.0,south,ENGIE
-Callisto 1 Energy Center Unit 1,PEER,CLO_BESS1,CLO_RN,101.5,houston,Jupiter Power
-Callisto 1 Energy Center Unit 2,PEER,CLO_BESS2,CLO_RN,101.5,houston,Jupiter Power
-Cameron,PEER,CAMWIND_BESS1,CAMWIND_RN,16.4,south,Apex Clean Energy
-Carina,PEER,CARN_ESS_BES1,CARN_ESS_RN,150.0,south,ENGIE
-Carrizo Springs,PEER,CARRIZO_BESS1,CARRIZO_ESR1,9.9,,REX Storage Holdings
-Castle Gap,PEER,CASL_GAP_BATTERY1,CASL_GAP_UN1,9.9,west,Luminant
-Century,PEER,CNTRY_BESS1,CNTRY_RN,9.9,north,Prologis
-Chillingham,PEER,CHIL_SL1_BESS1,CHIL_SLR,153.93,south,ENGIE
-Chisholm,PEER,CHISMGRD_BES1,CHISMGRD_RN,100.0,north,Eolian
-Citrus City,PEER,CITRUSCY_BESS1,CITRUSCY_RN,9.9,south,Prologis
-Commerce St (DGR),PEER,X4_SWRI,X443ESRN,10.0,south,CPS Energy
-Connolly,PEER,CNLY_ESS_BESS_1,CNLY_ESS_RN,125.0,north,Tesla
-Continental (DGR),PEER,CONTINEN_BESS1,CONTINEN_RN,9.9,south,REX Storage Holdings
-Coral U1,PEER,CORALSLR_BESS1,CORALSLR_ALL,48.4,north,National Grid Renewables
-Coral U2,PEER,CORALSLR_BESS2,CORALSLR_ALL,52.2,north,National Grid Renewables
-Corazon,PEER,CORAZON_BESS1,CORAZON_RN,205.0,,Eni New Energy
-Cottonwood Bayou,PEER,CTW_BESS1,CTW_RN,153.0,,TotalEnergies
-Crockett 1,PEER,CR_BESS1,CR_RN,9.9,houston,Prologis
-Crosby,PEER,CS_BESS,CS_RN,9.9,houston,On.Energy
-Cross Trails,PEER,CROSSTRL_BESS1,CROSSTRL_RN,58.0,west,Energy Vault
-Crossett Power 1,PEER,CROSSETT_BES1,CROSSETT_ALL,101.5,west,Jupiter Power
-Crossett Power 2,PEER,CROSSETT_BES2,CROSSETT_ALL,101.5,west,Jupiter Power
-Cunningham,PEER,TURQBESS_BESS1,TURQ_BESS1,190.0,north,ACCIONA Energia
-Damon,PEER,DA_BESS,DA_BESS,4.98,houston,Vopak Energy Storage Texas
-Danish Fields U1,PEER,DAN_BESS1,DAN_ALL,77.8,south,TotalEnergies
-Danish Fields U2,PEER,DAN_BESS2,DAN_ALL,75.1,south,TotalEnergies
-Decordova 1,PEER,DCSES_BES1,DC2SES_ALL,67.3,north,Vistra corp
-Decordova 2,PEER,DCSES_BES2,DC2SES_ALL,67.3,north,Vistra corp
-Decordova 3,PEER,DCSES_BES3,DC2SES_ALL,64.2,north,Vistra corp
-Decordova 4,PEER,DCSES_BES4,DC2SES_ALL,64.2,north,Vistra corp
-Desert Willow,PEER,DSWL_ESS_BES1,DSWL_BES1,150.0,north,esVolta
-Dickens U1,PEER,DKNS_ESS_BES1,DKNS_ESS_RN,50.0,west,ENGIE
-Dickens U2,PEER,DKNS_ESS_BES2,DKNS_ESS_RN,50.0,west,ENGIE
-Dickens U3,PEER,DKNS_ESS_BES3,DKNS_ESS_RN,50.0,west,ENGIE
-Dickens U4,PEER,DKNS_ESS_BES4,DKNS_ESS_RN,50.0,west,ENGIE
-Dickinson (DGR),PEER,DICKNSON_UNIT1,BRP_DIKN_RN,9.9,houston,ENGIE
-Dogfish,PEER,DGFS_ESR_BESS1,DGFS_ESR_RN,75.0,west,Gore Street Energy Storage Fund
-Ebony,PEER,EBNY_ESS_BESS1,EBNY_ESS_RN,203.5,south,Plus Power
-Eliza,PEER,ELZA_SLR_BES1,ELZA_SLR_RN,100.0,north,Enel North America
-Elsa (DGR),PEER,ELSA_BESS,ELSA_ESR_RN,10.0,south,SMT Energy
-Endurance Park,PEER,ENDPARKS_ESS1,ENDPARK_ESS1,50.0,west,Key Capture Energy
-Estonian,PEER,ESTONIAN_BES1,ESTONIAN_ALL,101.6,north,Enel North America
-Eunice,PEER,EUNICE_BES1,EUNICE_ALL,40.3,west,Orsted
-Evelyn,PEER,EVLN_ESS_BESS1,EVLN_ESS_RN,220.0,houston,Gridstor
-Falfur,PEER,FALFUR_BESS1,FALFUR_RN2,9.9,south,REX Storage Holdings
-Farmersville West 2 (DGR),PEER,FRMRSVLW_BES2,FRMR_BS2_RN1,9.9,north,Adapture Renewables
-Fence Post,PEER,FENCESLR_BESS1,FENCESLR_ALL,70.0,north,Enel North America
-Five Wells,PEER,FIVEWSLR_BESS1,FIVEWSLR_ALL,220.8,north,ENGIE
-Flat Top (DGR),PEER,FLAT_TOP_BESS1,FLTBES1,9.9,west,Key Capture Energy
-Flower Valley 1 (DGR),PEER,FLAT_TOP_FLATU1,FLVABES1_ESR,9.9,west,Jupiter Power
-Flower Valley 2,PEER,FLOWERII_BESS1,FLOWERII_RN,101.0,west,Jupiter Power
-Fort Mason,PEER,FORTMA_BESS1,FORTMA_RN,9.99,south,REX Storage Holdings
-Gambit,PEER,GAMBIT_BESS1,GAMBIT_RN,100.0,houston,Plus Power
-Garceno (DGR),PEER,GARCENO_BESS,GARC_BESS_RN,10.0,houston,SMT Energy
-Giga Texas,PEER,GIGA_ESS_BESS_1,GIGA_ESS_RN,125.0,south,Tesla
-Goodwin,PEER,GOODWIN_BESS1,GOODWIN_ESR,9.9,,REX Storage Holdings
-Great Kiskadee,PEER,GKS_BESS_BESS1,GKS_BESS_RN,103.0,south,SA Grid Solutions
-Gregory,PEER,GREGORY_BESS1,GREGORY_RN,9.9,south,REX Storage Holdings
-Harlingen II,PEER,W_HARLIN_BESS,W_HRL_ESR_RN,10.0,south,SMT Energy
-Hearn Road,PEER,HEARN_RD_BESS1,HEARN_RD_RN,9.9,south,REX Storage Holdings
-Heights (DGR),PEER,HEIGHTTN_UNIT1,BRHEIGHT_RN,9.9,houston,ENGIE
-High Lonesome,PEER,HI_LONEB_BESS1,HI_LONEB_RN1,50.0,west,Enel North America
-Hoefs Road (DGR),PEER,HRBESS_BESS,HRBESS_BESS,2.0,west,Form Energy
-Holy U1,PEER,HLY_BESS1,HLY_RN,104.7,houston,UBS Asset Management
-Holy U2,PEER,HLY_BESS2,HLY_RN,104.7,houston,UBS Asset Management
-House Mountain,PEER,HOUSEMTN_BESS1,HOUSEMTN_RN,60.0,west,Jupiter Power
-Hummingbird,PEER,HMNG_ESS_BESS1,HMNG_ESS_RN,103.8,north,Key Capture Energy
-Hydra,PEER,HYDR_ESS_BES1,HYDR_ESS_RN,200.8,west,ENGIE
-Inadale,PEER,INDL_ESS,IND_INADALE1,9.9,west,RWE
-Inertia,PEER,INRT_W_BESS_1,INRT_W_ALL,13.0,west,NextEra Energy Resources
-Jade 1 (SLF),PEER,JADE_SLR_BESS1,JADE_SLR_ALL,78.5,west,IPX Power
-Jade 2 (SLF),PEER,JADE_SLR_BESS2,JADE_SLR_ALL,82.3,west,IPX Power
-Jaguar 1,PEER,JAG_SLR_BESS1,JAG_SLR_RN,157.1,north,Perfect Power
-Jaguar 2,PEER,JAG_SLR_BESS2,JAG_SLR_RN,157.1,,Perfect Power
-Jarvis U1,PEER,JAR_BES1,JAR_RN,154.2,houston,SMT Energy
-Jarvis U2,PEER,JAR_BES2,JAR_RN,154.2,houston,SMT Energy
-Johnson City,PEER,JOHNCI_UNIT_1,JC_BAT_RN,2.3,south,Pedernales Electric Cooperative
-Junction North,PEER,JUNORTH_BES1,JUNORTH_RN,9.9,south,Adapture Renewables
-Libra,PEER,LBRA_ESS_BES1,LBRA_BES1,200.0,south,ENGIE
-Liggett Switch,PEER,LIGSW_BESS1,LIGSW_RN,9.8,north,Prologis
-Lily,PEER,LILY_BESS1,LILY_RN,50.0,north,Enel North America
-Limousin Oak,PEER,LMO_BESS1,LMO_ESR_RN,105.0,north,Key Capture Energy
-Longbow,PEER,LON_BES1,LON_RN1,174.0,houston,Tokyo Gas America
-Loop 463 (DGR),PEER,L_463S_UNIT1,BRP_LOOP_RN,9.9,south,ENGIE
-Lopeno (DGR),PEER,LOPENO_UNIT1,BRP_LOP1_RN,9.9,south,ENGIE
-Los Fresnos (DGR),PEER,L_FRESNO_BESS,L_FRE_ESR_RN,10.0,south,SMT Energy
-Lower Rio,PEER,LOWR_ESS_BESS1,LOWR_ESS_RN,60.0,south,Ormat
-Lucky Bluff,PEER,LUCKYBLU_UNIT1,LUCKYBLU_RN,100.0,,Brookfield Renewable
-Madero Grid 1,PEER,MADERO_UNIT1,MADERO_RN,100.0,south,Eolian
-Madero Grid 2,PEER,MADERO_UNIT2,MADERO_RN,100.0,south,Eolian
-Magnolia (DGR),PEER,MAGNO_TN_UNIT1,BRPMAGNO_RN,9.9,houston,ENGIE
-Mayberry,PEER,MAYBERRY_BESS,MYRY_ESR_RN,10.0,south,SMT Energy
-Mayberry 2,PEER,MAYBERRY_BESS2,MYRY_BES2_RN,9.9,south,SMT Energy
-Midway,PEER,MIDWY_BESS1,MIDWY_RN,9.95,west,Prologis
-Moore Field,PEER,MOORE_FL_BESS1,MOORE_FL_RN,9.9,south,REX Storage Holdings
-Muenster,PEER,MUENSTER_BESS1,MUENSTER_RN,9.9,north,REX Storage Holdings
-Mustang Bayou,PEER,MU_BESS,MU_RN,9.99,houston,On.Energy
-Mustang Creek,PEER,MUSTNGCK_BES1,MUSTNGCK_ALL,71.0,south,Enel North America
-Myrtle U1,PEER,MYR_BES1,MYR_ALL,74.9,houston,TotalEnergies
-Myrtle U2,PEER,MYR_BES2,MYR_ALL,74.3,houston,TotalEnergies
-Noble 1,PEER,NOBLESLR_BESS1,NOBLESLR_ALL,62.5,north,National Grid Renewables
-Noble 2,PEER,NOBLESLR_BESS2,NOBLESLR_ALL,62.5,north,National Grid Renewables
-North Alamo,PEER,N_ALAMO_BESS,N_AL_BESS_RN,10.0,south,SMT Energy
-North Columbia,PEER,NCO_ESS1,NCO_RN,50.0,houston,Key Capture Energy
-North Fork,PEER,NF_BRP_BES1,NF_BRP_RN,100.0,south,ENGIE
-North Mercedes (DGR),PEER,N_MERCED_BESS,N_MRD_ESR_RN,10.0,south,SMT Energy
-Notrees,PEER,NWF_NBS,NWF_NWF1,36.0,west,Duke Energy
-OCI Alamo,PEER,OCI_ALM1_ASTRO1,RN_OCI_ALAMO,1.0,south,Oci Solar Power
-Odessa SW (DGR),PEER,ODESW_UNIT1,ODESW_RN,9.9,west,ENGIE
-Padua 1,PEER,PAD1_ESS_BESS1,PAD1_ESS_RN,51.4,south,Eolian
-Palacios,PEER,PALACIOS_BESS1,PALACIOS_RN,9.9,south,REX Storage Holdings
-Paleo,PEER,PALE_ESS_BES1,PALE_ESS_EN,200.8,west,ENGIE
-Pavo 1,PEER,PAVO_ESS_BESS1,PAVO_ESS_ALL,86.5,west,ENGIE
-Pavo 2,PEER,PAVO_ESS_BESS2,PAVO_ESS_ALL,86.5,west,ENGIE
-Photon 1,PEER,PHO_BES1,PHO_ALL,150.0,south,Enel North America
-Photon 2 (SLF),PEER,PHO_BES2,PHO_ALL,150.0,south,Enel North America
-Pirate,PEER,PIRATE1_BESS1,PIRATE_RN,9.9,south,REX Storage Holdings
-Port Lavaca (DGR),PEER,PRTLAVS_BESS1,PTLBES_BESS1,9.9,south,Key Capture Energy
-Prairie Creek,PEER,PRCRK_BESS1,PRCRK_RN,9.9,north,SMT Energy
-Prospect (DGR),PEER,WCOLLOCL_BSS_U1,BSS_U1,9.9,houston,GlidePath
-Pueblo 1 (DGR),PEER,PUEBLO_UNIT1,BRP_PBL1_RN,9.9,south,ENGIE
-Pueblo 2 (DGR),PEER,PUEBLO_UNIT2,BRP_PBL2_RN,9.9,south,ENGIE
-Pyron,PEER,PYR_ESS,PYR_PYRON1,9.9,west,RWE
-Pyron 2A,PEER,PYR_ESS2A,PYR_PYRON1,15.0,west,RWE
-Pyron 2B,PEER,PYR_ESS2B,PYR_PYRON1,15.0,west,RWE
-Queen,PEER,QUEEN_BA_BESS1,QUEEN_BA_RN,50.0,west,Enel North America
-Rabbit Hill,PEER,GEORSO_ESS_1,RHESS2_ESS1,9.9,south,Ormat
-Ranchtown (DGR),PEER,K0_UNIT1,BRP_RN_UNIT1,10.0,south,ENGIE
-Republic Road,PEER,RPUBRDS_ESS1,RPUBRDS_RN,50.0,north,Key Capture Energy
-Rio Grande City (DGR),PEER,RIO_GRAN_BESS,RIOG_ESR_RN,10.0,south,SMT Energy
-Rio Grande City 2,PEER,RIO_GRAN_BESS2,RIOG_ESR2_RN,9.9,south,Prologis
-River Bend,PEER,RBN_BESS1,RBN_BESS1,101.6,houston,Cypress Creek Renewables
-River Valley 1,PEER,RVRVLYS_ESS1,RVRVLYS_ALL,50.0,south,Key Capture Energy
-River Valley 2,PEER,RVRVLYS_ESS2,RVRVLYS_ALL,50.0,south,Key Capture Energy
-Rodeo Ranch U1,PEER,RRANCHES_UNIT1,RRANCHES_ALL,150.0,west,Plus Power
-Rodeo Ranch U2,PEER,RRANCHES_UNIT2,RRANCHES_ALL,150.0,west,Plus Power
-Roseland,PEER,ROSELAND_BESS1,ROSELAND_ALL,50.0,north,Enel North America
-SP TX-12B,PEER,SPTX12B_BES1,SPTX12B_RN,25.1,west,Ormat
-Santa Rosa (DGR),PEER,S_SNROSA_BESS,SROSA_ESR_RN,10.0,south,SMT Energy
-Saragosa (DGR),PEER,SGSA_BESS1,SGSA_DGR,9.9,west,NW Group
-Shamrock (SLF),PEER,SHAMROCK_BESS1,SHAMROCK_RN,99.3,west,NextEra Energy Resources
-Sheep Creek,PEER,SHEEPCRK_BESS1,SHEEPCRK_1,142.0,west,ENGIE
-Silicon Hill 1,PEER,SLCNHLS_ESS1,SLCN_ESS_ALL,50.0,south,Key Capture Energy
-Silicon Hill 2,PEER,SLCNHLS_ESS2,SLCN_ESS_ALL,50.0,south,Key Capture Energy
-Snyder (DGR),PEER,DPCRK_UNIT1,SNY_BESS_RN,10.0,west,Gore Street Energy Storage Fund
-St. Gall 2,PEER,SGAL_BES_BESS2,SG_BES_BESS1,102.5,west,Jupiter Power
-St. Gall I,PEER,SGAL_BES_BESS1,SG_BES_BESS1,104.5,west,Jupiter Power
-Stampede,PEER,STAM_SLR_BESS1,STAM_SLR_ALL,70.0,north,Enel North America
-Sun Valley 1,PEER,SUNVASLR_BESS1,SUNVASLR_ALL,54.1,north,ENGIE
-Sun Valley 2,PEER,SUNVASLR_BESS2,SUNVASLR_ALL,47.3,north,ENGIE
-Sweeny (DGR),PEER,SWEENY_UNIT1,BRP_SWNY_RN,10.0,houston,ENGIE
-Sweetwater (DGR),PEER,SWTWR_UNIT1,SWT_BESS_RN,10.0,west,Gore Street Energy Storage Fund
-Swoose (DGR),PEER,PYOTE_SWOOSEU1,SWOOSE1_U1,9.9,west,Jupiter Power
-Swoose 2,PEER,SWOOSEII_BESS1,SWOOSEII_RN,101.0,west,Jupiter Power
-Telview,PEER,TV_BESS,TV_RN,9.9,houston,Agilitas Energy
-Tidwell Prairie U1,PEER,TDWLPR_1_BESS1,TDWLPR_1_RN,102.0,north,Jupiter Power
-Tidwell Prairie U2,PEER,TDWLPR_1_BESS2,TDWLPR_1_RN,102.0,north,Jupiter Power
-Timberwolf,PEER,TBWF_ESS_BES1,TBWF_ES_BES1,150.0,west,Spearmint Energy
-Tos (DGR),PEER,TOSBATT_UNIT1,RN_TOSBATT,2.0,west,NRG Energy
-Triple Butte (DGR),PEER,BELD_BELU1,TRIPBUT1_RN,7.5,west,Jupiter Power
-Walstrom,PEER,WAL_BESS_1,WAL_RN,200.0,south,Tesla
-Wharton,PEER,WR_BESS1,WR_RN,9.9,,Agilitas Energy
-Wigeon Whistle,PEER,WIG_ESS_BES1,WIG_BESS_RN,122.9,north,UBS Asset Management
-Wolf Tank,PEER,WFTANK_ESS1,WFTANK_ESS1,155.0,south,Aypa Power
-Worsham (DGR),PEER,WORSHAM_BESS1,WRSBES_BESS1,9.9,west,Key Capture Energy
-Zapata 1 (DGR),PEER,ZAPATA_UNIT1,BRP_ZPT1_RN,9.9,south,ENGIE
-Zapata 2 (DGR),PEER,ZAPATA_UNIT2,BRP_ZPT2_RN,9.9,south,ENGIE
-Zier U1,PEER,ZIER_SLR_BES1,ZIER_SLR_ALL,40.08,south,Cypress Creek Renewables
+name,owner,resource_name,settlement_point,nameplate_mw,energy_capacity_mwh,load_zone,company,duration_hr,duration_class
+Catarina (DGR),HEN,CATARINA_BESS,CATARINA_B1,9.9,9.9,south,Hunt Energy Network,1.0,1hr
+Cedarvale (DGR),HEN,CEDRVALE_BESS,CEDRVALE_RN,9.9,9.9,west,Hunt Energy Network,1.0,1hr
+Cisco,HEN,CISC_BESS,CISC_RN,9.9,10.75,north,Hunt Energy Network,1.09,1hr
+Coyote Springs,HEN,COYOTSPR_BESS,COYOTSPR_RN,9.9,9.9,west,Hunt Energy Network,1.0,1hr
+Diboll (DGR),HEN,DIBOL_BESS,DIBOL_RN,9.9,9.9,north,Hunt Energy Network,1.0,1hr
+Falfurrias,HEN,FALFUR_BESS,FALFUR_RN,9.9,9.9,south,Hunt Energy Network,1.0,1hr
+Farmersville (DGR),HEN,FRMRSVLW_BESS,FRMRSVLW_RN,9.9,9.9,north,Hunt Energy Network,1.0,1hr
+Faulkner (DGR),HEN,FAULKNER_BESS,FAULKNER_RN,9.9,9.9,west,Hunt Energy Network,1.0,1hr
+Fort Duncan,HEN,FTDUNCAN_BESS_GEN,FTDUNCAN_RN,100.0,200.0,south,Hunt Energy Network,2.0,2hr
+Garden City East (DGR),HEN,GRDNE_BESS,GRDNE_ESR_RN,9.9,9.9,west,Hunt Energy Network,1.0,1hr
+Gomez (DGR),HEN,GOMZ_BESS,GOMZ_RN,9.9,9.9,west,Hunt Energy Network,1.0,1hr
+Hamilton (DGR) U1,HEN,HAMILTON_BESS,HAMI_BESS_RN,9.95,9.9,west,Hunt Energy Network,0.99,1hr
+Holcomb (DGR),HEN,HOLCOMB_BESS,HOLCOMB_RN1,9.9,9.9,south,Hunt Energy Network,1.0,1hr
+Judkins (DGR),HEN,JDKNS_BESS,JDKNS_RN,9.9,9.9,west,Hunt Energy Network,1.0,1hr
+Junction (DGR),HEN,JUNCTION_BESS,JUNCTION_RN,9.9,9.9,south,Hunt Energy Network,1.0,1hr
+Lonestar,HEN,LONESTAR_BESS,LONESTAR_RN,9.95,9.9,west,Hunt Energy Network,0.99,1hr
+Lufkin South (DGR),HEN,LFSTH_BESS,LFSTH_RN,9.9,9.9,north,Hunt Energy Network,1.0,1hr
+Mainland (DGR),HEN,MAINLAND_BESS,MAINLAND_RN,9.9,9.9,houston,Hunt Energy Network,1.0,1hr
+Mineral Wells East (DGR),HEN,MNWLE_BESS,MNWL_BESS_RN,9.9,9.9,north,Hunt Energy Network,1.0,1hr
+Olney (DGR),HEN,OLNEYTN_BESS,OLNEYTN_RN,9.9,9.9,north,Hunt Energy Network,1.0,1hr
+Pauline (DGR),HEN,PAULN_BESS,PAULN_RN,9.95,9.9,north,Hunt Energy Network,0.99,1hr
+Pavlov,HEN,PAVLOV_BESS,PAVLOV_BT_RN,9.9,9.9,houston,Hunt Energy Network,1.0,1hr
+Rattlesnake (DGR),HEN,RTLSNAKE_BESS,RTLSNAKE_BT,9.9,9.9,west,Hunt Energy Network,1.0,1hr
+Russek Street,HEN,RUSSEKST_BESS,RUSSEKST_RN,9.9,10.8,west,Hunt Energy Network,1.09,1hr
+Saddleback (DGR),HEN,SADLBACK_BESS,SADLBACK_RN,9.9,9.9,west,Hunt Energy Network,1.0,1hr
+Sandlake,HEN,SANDLAKE_BESS,SANDLAKE_RN,9.9,9.9,west,Hunt Energy Network,1.0,1hr
+Screwbean (DGR),HEN,SBEAN_BESS,SBEAN_BESS,9.9,9.9,west,Hunt Energy Network,1.0,1hr
+Toyah Power Station (DGR),HEN,CHERRYCR_BESS,TOYAH_RN,10.4,9.9,west,Hunt Energy Network,0.95,1hr
+Tynan,HEN,TYNAN_BESS1,TYNAN_RN,9.9,10.8,south,Hunt Energy Network,1.09,1hr
+Val Verde,HEN,MV_VALV4_BESS,MV_VALV4_RN,10.0,10.0,south,Hunt Energy Network,1.0,1hr
+Weil Tract,HEN,WEIL_TRC_BESS,WLTC_ESR_RN,9.9,10.8,south,Hunt Energy Network,1.09,1hr
+Adlong,PEER,ADL1_BESS1,ADL_RN,60.0,60.0,,Brookfield Renewable,1.0,1hr
+Al Pastor,PEER,ALP_BESS_BESS1,ALP_BESS_RN,103.1,145.0,west,UBS Asset Management,1.41,1hr
+Alvin (DGR),PEER,ALVIN_UNIT1,ALVIN_RN,10.0,10.0,houston,ENGIE,1.0,1hr
+Anchor 1,PEER,ANCHOR_BESS1,ANCHOR_ALL,35.2,54.0,north,Enel North America,1.53,2hr
+Anchor 2,PEER,ANCHOR_BESS2,ANCHOR_ALL,36.3,59.0,north,Enel North America,1.63,2hr
+Andromeda 1 (SLF),PEER,ANDMDSLR_BESS1,ANDMDSLR_ALL,82.0,164.0,west,IPX Power,2.0,2hr
+Andromeda 2 (SLF),PEER,ANDMDSLR_BESS2,ANDMDSLR_ALL,78.0,156.0,west,IPX Power,2.0,2hr
+Anemoi,PEER,ANEM_ESS_BESS1,ANEM_ESS_RN,205.0,400.0,south,Plus Power,1.95,2hr
+Angelo,PEER,ANG_SLR_BESS1,ANG_ALL,103.0,200.0,west,Apex Clean Energy,1.94,2hr
+Angleton,PEER,AE_BESS,AE_RN,9.9,9.9,houston,On.Energy,1.0,1hr
+Anole,PEER,ANOL_ESS_BES1,ANOL_ESS_RN,247.1,480.0,north,esVolta,1.94,2hr
+Antila,PEER,ANTL_ESS_BES1,ANTL_ESS_ES1,72.38,140.0,south,ENGIE,1.93,2hr
+Avila,PEER,AVIL_ESS_BES1,AVIL_ESS_RN,160.0,320.0,west,ENGIE,2.0,2hr
+Azure Sky Solar,PEER,AZURE_BESS1,AZURE_RN,77.6,116.0,west,Enel North America,1.49,1hr
+Azure Sky Wind,PEER,VORTEX_BESS1,VORT_ALL_RN,121.8,180.0,north,Enel North America,1.48,1hr
+BRP Angleton (DGR),PEER,ANGLETON_UNIT1,BRPANGLE_RN,10.0,10.0,houston,ENGIE,1.0,1hr
+Bat Cave,PEER,BATCAVE_BES1,BATCAVE_RN,100.5,110.0,south,ENGIE,1.09,1hr
+Bay City,PEER,BAY_CITY_BESS,BAYC_BESS_RN,9.9,9.9,houston,SMT Energy,1.0,1hr
+Black Springs,PEER,BLACKSPR_UNIT1,BLACKSPR_RN,120.0,290.0,,Brookfield Renewable,2.42,2hr
+Blue Jay,PEER,BLUEJAY_BESS1,BLUEJAY_RN,50.0,75.0,north,Enel North America,1.5,2hr
+Blue Summit,PEER,BLSUMMIT_BATTERY,BLSMT1_5_A_6,30.0,12.6,west,NextEra Energy Resources,0.42,1hr
+BoCo,PEER,BOCO_ESS_ESS1,BOCO_ESS_RN,154.0,300.0,west,Aypa Power,1.95,2hr
+Bocanova,PEER,BCNV_ESS_BESS1,BCNV_RN,150.0,300.0,houston,Nightpeak Energy,2.0,2hr
+Brazoria (DGR),PEER,BRAZORIA_UNIT1,BRP_BRAZ_RN,10.0,10.0,houston,ENGIE,1.0,1hr
+Bright Arrow U1,PEER,BR_ARROW_BESS1,BR_ARROW_ALL,49.3,95.0,north,RWE,1.93,2hr
+Bright Arrow U2,PEER,BR_ARROW_BESS2,BR_ARROW_ALL,52.8,101.8,north,RWE,1.93,2hr
+Burksol,PEER,BKSL_ESS_BESS1,BKSL_RN,103.0,200.0,west,esVolta,1.94,2hr
+Byrd Ranch,PEER,BYRDR_ES_BESS1,BYRDR_ES_ALL,50.0,50.0,houston,GlidePath,1.0,1hr
+Cachi,PEER,CACH_ESS_BESS1,CACH_ESS_RN,200.0,400.0,south,ENGIE,2.0,2hr
+Callisto 1 Energy Center Unit 1,PEER,CLO_BESS1,CLO_RN,101.5,212.5,houston,Jupiter Power,2.09,2hr
+Callisto 1 Energy Center Unit 2,PEER,CLO_BESS2,CLO_RN,101.5,212.5,houston,Jupiter Power,2.09,2hr
+Cameron,PEER,CAMWIND_BESS1,CAMWIND_RN,16.4,32.8,south,Apex Clean Energy,2.0,2hr
+Carina,PEER,CARN_ESS_BES1,CARN_ESS_RN,150.0,300.0,south,ENGIE,2.0,2hr
+Carrizo Springs,PEER,CARRIZO_BESS1,CARRIZO_ESR1,9.9,14.3,,REX Storage Holdings,1.44,1hr
+Castle Gap,PEER,CASL_GAP_BATTERY1,CASL_GAP_UN1,9.9,42.0,west,Luminant,4.24,2hr
+Century,PEER,CNTRY_BESS1,CNTRY_RN,9.9,19.0,north,Prologis,1.92,2hr
+Chillingham,PEER,CHIL_SL1_BESS1,CHIL_SLR,153.93,300.0,south,ENGIE,1.95,2hr
+Chisholm,PEER,CHISMGRD_BES1,CHISMGRD_RN,100.0,130.0,north,Eolian,1.3,1hr
+Citrus City,PEER,CITRUSCY_BESS1,CITRUSCY_RN,9.9,22.4,south,Prologis,2.26,2hr
+Commerce St (DGR),PEER,X4_SWRI,X443ESRN,10.0,10.0,south,CPS Energy,1.0,1hr
+Connolly,PEER,CNLY_ESS_BESS_1,CNLY_ESS_RN,125.0,250.0,north,Tesla,2.0,2hr
+Continental (DGR),PEER,CONTINEN_BESS1,CONTINEN_RN,9.9,9.9,south,REX Storage Holdings,1.0,1hr
+Coral U1,PEER,CORALSLR_BESS1,CORALSLR_ALL,48.4,61.4,north,National Grid Renewables,1.27,1hr
+Coral U2,PEER,CORALSLR_BESS2,CORALSLR_ALL,52.2,59.4,north,National Grid Renewables,1.14,1hr
+Corazon,PEER,CORAZON_BESS1,CORAZON_RN,205.0,200.0,,Eni New Energy,0.98,1hr
+Cottonwood Bayou,PEER,CTW_BESS1,CTW_RN,153.0,225.0,,TotalEnergies,1.47,1hr
+Crockett 1,PEER,CR_BESS1,CR_RN,9.9,20.0,houston,Prologis,2.02,2hr
+Crosby,PEER,CS_BESS,CS_RN,9.9,20.0,houston,On.Energy,2.02,2hr
+Cross Trails,PEER,CROSSTRL_BESS1,CROSSTRL_RN,58.0,114.0,west,Energy Vault,1.97,2hr
+Crossett Power 1,PEER,CROSSETT_BES1,CROSSETT_ALL,101.5,100.0,west,Jupiter Power,0.99,1hr
+Crossett Power 2,PEER,CROSSETT_BES2,CROSSETT_ALL,101.5,100.0,west,Jupiter Power,0.99,1hr
+Cunningham,PEER,TURQBESS_BESS1,TURQ_BESS1,190.0,380.0,north,ACCIONA Energia,2.0,2hr
+Damon,PEER,DA_BESS,DA_BESS,4.98,9.7,houston,Vopak Energy Storage Texas,1.95,2hr
+Danish Fields U1,PEER,DAN_BESS1,DAN_ALL,77.8,115.0,south,TotalEnergies,1.48,1hr
+Danish Fields U2,PEER,DAN_BESS2,DAN_ALL,75.1,110.0,south,TotalEnergies,1.46,1hr
+Decordova 1,PEER,DCSES_BES1,DC2SES_ALL,67.3,67.3,north,Vistra corp,1.0,1hr
+Decordova 2,PEER,DCSES_BES2,DC2SES_ALL,67.3,67.3,north,Vistra corp,1.0,1hr
+Decordova 3,PEER,DCSES_BES3,DC2SES_ALL,64.2,64.2,north,Vistra corp,1.0,1hr
+Decordova 4,PEER,DCSES_BES4,DC2SES_ALL,64.2,64.2,north,Vistra corp,1.0,1hr
+Desert Willow,PEER,DSWL_ESS_BES1,DSWL_BES1,150.0,300.0,north,esVolta,2.0,2hr
+Dickens U1,PEER,DKNS_ESS_BES1,DKNS_ESS_RN,50.0,50.0,west,ENGIE,1.0,1hr
+Dickens U2,PEER,DKNS_ESS_BES2,DKNS_ESS_RN,50.0,50.0,west,ENGIE,1.0,1hr
+Dickens U3,PEER,DKNS_ESS_BES3,DKNS_ESS_RN,50.0,50.0,west,ENGIE,1.0,1hr
+Dickens U4,PEER,DKNS_ESS_BES4,DKNS_ESS_RN,50.0,50.0,west,ENGIE,1.0,1hr
+Dickinson (DGR),PEER,DICKNSON_UNIT1,BRP_DIKN_RN,9.9,9.9,houston,ENGIE,1.0,1hr
+Dogfish,PEER,DGFS_ESR_BESS1,DGFS_ESR_RN,75.0,91.5,west,Gore Street Energy Storage Fund,1.22,1hr
+Ebony,PEER,EBNY_ESS_BESS1,EBNY_ESS_RN,203.5,400.0,south,Plus Power,1.97,2hr
+Eliza,PEER,ELZA_SLR_BES1,ELZA_SLR_RN,100.0,150.0,north,Enel North America,1.5,2hr
+Elsa (DGR),PEER,ELSA_BESS,ELSA_ESR_RN,10.0,10.0,south,SMT Energy,1.0,1hr
+Endurance Park,PEER,ENDPARKS_ESS1,ENDPARK_ESS1,50.0,99.0,west,Key Capture Energy,1.98,2hr
+Estonian,PEER,ESTONIAN_BES1,ESTONIAN_ALL,101.6,152.0,north,Enel North America,1.5,2hr
+Eunice,PEER,EUNICE_BES1,EUNICE_ALL,40.3,40.0,west,Orsted,0.99,1hr
+Evelyn,PEER,EVLN_ESS_BESS1,EVLN_ESS_RN,220.0,440.0,houston,Gridstor,2.0,2hr
+Falfur,PEER,FALFUR_BESS1,FALFUR_RN2,9.9,11.8,south,REX Storage Holdings,1.19,1hr
+Farmersville West 2 (DGR),PEER,FRMRSVLW_BES2,FRMR_BS2_RN1,9.9,20.0,north,Adapture Renewables,2.02,2hr
+Fence Post,PEER,FENCESLR_BESS1,FENCESLR_ALL,70.0,105.0,north,Enel North America,1.5,2hr
+Five Wells,PEER,FIVEWSLR_BESS1,FIVEWSLR_ALL,220.8,220.8,north,ENGIE,1.0,1hr
+Flat Top (DGR),PEER,FLAT_TOP_BESS1,FLTBES1,9.9,16.5,west,Key Capture Energy,1.67,2hr
+Flower Valley 1 (DGR),PEER,FLAT_TOP_FLATU1,FLVABES1_ESR,9.9,19.8,west,Jupiter Power,2.0,2hr
+Flower Valley 2,PEER,FLOWERII_BESS1,FLOWERII_RN,101.0,200.0,west,Jupiter Power,1.98,2hr
+Fort Mason,PEER,FORTMA_BESS1,FORTMA_RN,9.99,9.99,south,REX Storage Holdings,1.0,1hr
+Gambit,PEER,GAMBIT_BESS1,GAMBIT_RN,100.0,175.0,houston,Plus Power,1.75,2hr
+Garceno (DGR),PEER,GARCENO_BESS,GARC_BESS_RN,10.0,10.0,houston,SMT Energy,1.0,1hr
+Giga Texas,PEER,GIGA_ESS_BESS_1,GIGA_ESS_RN,125.0,249.0,south,Tesla,1.99,2hr
+Goodwin,PEER,GOODWIN_BESS1,GOODWIN_ESR,9.9,14.3,,REX Storage Holdings,1.44,1hr
+Great Kiskadee,PEER,GKS_BESS_BESS1,GKS_BESS_RN,103.0,200.0,south,SA Grid Solutions,1.94,2hr
+Gregory,PEER,GREGORY_BESS1,GREGORY_RN,9.9,9.9,south,REX Storage Holdings,1.0,1hr
+Harlingen II,PEER,W_HARLIN_BESS,W_HRL_ESR_RN,10.0,10.0,south,SMT Energy,1.0,1hr
+Hearn Road,PEER,HEARN_RD_BESS1,HEARN_RD_RN,9.9,9.9,south,REX Storage Holdings,1.0,1hr
+Heights (DGR),PEER,HEIGHTTN_UNIT1,BRHEIGHT_RN,9.9,9.9,houston,ENGIE,1.0,1hr
+High Lonesome,PEER,HI_LONEB_BESS1,HI_LONEB_RN1,50.0,75.0,west,Enel North America,1.5,2hr
+Hoefs Road (DGR),PEER,HRBESS_BESS,HRBESS_BESS,2.0,2.0,west,Form Energy,1.0,1hr
+Holy U1,PEER,HLY_BESS1,HLY_RN,104.7,102.2,houston,UBS Asset Management,0.98,1hr
+Holy U2,PEER,HLY_BESS2,HLY_RN,104.7,102.2,houston,UBS Asset Management,0.98,1hr
+House Mountain,PEER,HOUSEMTN_BESS1,HOUSEMTN_RN,60.0,134.6,west,Jupiter Power,2.24,2hr
+Hummingbird,PEER,HMNG_ESS_BESS1,HMNG_ESS_RN,103.8,227.0,north,Key Capture Energy,2.19,2hr
+Hydra,PEER,HYDR_ESS_BES1,HYDR_ESS_RN,200.8,200.8,west,ENGIE,1.0,1hr
+Inadale,PEER,INDL_ESS,IND_INADALE1,9.9,9.9,west,RWE,1.0,1hr
+Inertia,PEER,INRT_W_BESS_1,INRT_W_ALL,13.0,49.4,west,NextEra Energy Resources,3.8,2hr
+Jade 1 (SLF),PEER,JADE_SLR_BESS1,JADE_SLR_ALL,78.5,156.0,west,IPX Power,1.99,2hr
+Jade 2 (SLF),PEER,JADE_SLR_BESS2,JADE_SLR_ALL,82.3,164.0,west,IPX Power,1.99,2hr
+Jaguar 1,PEER,JAG_SLR_BESS1,JAG_SLR_RN,157.1,340.0,north,Perfect Power,2.16,2hr
+Jaguar 2,PEER,JAG_SLR_BESS2,JAG_SLR_RN,157.1,340.0,,Perfect Power,2.16,2hr
+Jarvis U1,PEER,JAR_BES1,JAR_RN,154.2,220.5,houston,SMT Energy,1.43,1hr
+Jarvis U2,PEER,JAR_BES2,JAR_RN,154.2,220.5,houston,SMT Energy,1.43,1hr
+Johnson City,PEER,JOHNCI_UNIT_1,JC_BAT_RN,2.3,2.3,south,Pedernales Electric Cooperative,1.0,1hr
+Junction North,PEER,JUNORTH_BES1,JUNORTH_RN,9.9,20.0,south,Adapture Renewables,2.02,2hr
+Libra,PEER,LBRA_ESS_BES1,LBRA_BES1,200.0,200.0,south,ENGIE,1.0,1hr
+Liggett Switch,PEER,LIGSW_BESS1,LIGSW_RN,9.8,9.5,north,Prologis,0.97,1hr
+Lily,PEER,LILY_BESS1,LILY_RN,50.0,65.0,north,Enel North America,1.3,1hr
+Limousin Oak,PEER,LMO_BESS1,LMO_ESR_RN,105.0,226.8,north,Key Capture Energy,2.16,2hr
+Longbow,PEER,LON_BES1,LON_RN1,174.0,348.0,houston,Tokyo Gas America,2.0,2hr
+Loop 463 (DGR),PEER,L_463S_UNIT1,BRP_LOOP_RN,9.9,10.0,south,ENGIE,1.01,1hr
+Lopeno (DGR),PEER,LOPENO_UNIT1,BRP_LOP1_RN,9.9,10.0,south,ENGIE,1.01,1hr
+Los Fresnos (DGR),PEER,L_FRESNO_BESS,L_FRE_ESR_RN,10.0,10.0,south,SMT Energy,1.0,1hr
+Lower Rio,PEER,LOWR_ESS_BESS1,LOWR_ESS_RN,60.0,120.0,south,Ormat,2.0,2hr
+Lucky Bluff,PEER,LUCKYBLU_UNIT1,LUCKYBLU_RN,100.0,197.0,,Brookfield Renewable,1.97,2hr
+Madero Grid 1,PEER,MADERO_UNIT1,MADERO_RN,100.0,273.0,south,Eolian,2.73,2hr
+Madero Grid 2,PEER,MADERO_UNIT2,MADERO_RN,100.0,273.0,south,Eolian,2.73,2hr
+Magnolia (DGR),PEER,MAGNO_TN_UNIT1,BRPMAGNO_RN,9.9,9.9,houston,ENGIE,1.0,1hr
+Mayberry,PEER,MAYBERRY_BESS,MYRY_ESR_RN,10.0,10.0,south,SMT Energy,1.0,1hr
+Mayberry 2,PEER,MAYBERRY_BESS2,MYRY_BES2_RN,9.9,14.5,south,SMT Energy,1.46,1hr
+Midway,PEER,MIDWY_BESS1,MIDWY_RN,9.95,9.95,west,Prologis,1.0,1hr
+Moore Field,PEER,MOORE_FL_BESS1,MOORE_FL_RN,9.9,9.9,south,REX Storage Holdings,1.0,1hr
+Muenster,PEER,MUENSTER_BESS1,MUENSTER_RN,9.9,12.1,north,REX Storage Holdings,1.22,1hr
+Mustang Bayou,PEER,MU_BESS,MU_RN,9.99,19.7,houston,On.Energy,1.97,2hr
+Mustang Creek,PEER,MUSTNGCK_BES1,MUSTNGCK_ALL,71.0,107.0,south,Enel North America,1.51,2hr
+Myrtle U1,PEER,MYR_BES1,MYR_ALL,74.9,124.44,houston,TotalEnergies,1.66,2hr
+Myrtle U2,PEER,MYR_BES2,MYR_ALL,74.3,119.56,houston,TotalEnergies,1.61,2hr
+Noble 1,PEER,NOBLESLR_BESS1,NOBLESLR_ALL,62.5,62.5,north,National Grid Renewables,1.0,1hr
+Noble 2,PEER,NOBLESLR_BESS2,NOBLESLR_ALL,62.5,62.5,north,National Grid Renewables,1.0,1hr
+North Alamo,PEER,N_ALAMO_BESS,N_AL_BESS_RN,10.0,10.0,south,SMT Energy,1.0,1hr
+North Columbia,PEER,NCO_ESS1,NCO_RN,50.0,98.0,houston,Key Capture Energy,1.96,2hr
+North Fork,PEER,NF_BRP_BES1,NF_BRP_RN,100.0,110.0,south,ENGIE,1.1,1hr
+North Mercedes (DGR),PEER,N_MERCED_BESS,N_MRD_ESR_RN,10.0,10.0,south,SMT Energy,1.0,1hr
+Notrees,PEER,NWF_NBS,NWF_NWF1,36.0,12.6,west,Duke Energy,0.35,1hr
+OCI Alamo,PEER,OCI_ALM1_ASTRO1,RN_OCI_ALAMO,1.0,0.25,south,Oci Solar Power,0.25,1hr
+Odessa SW (DGR),PEER,ODESW_UNIT1,ODESW_RN,9.9,9.9,west,ENGIE,1.0,1hr
+Padua 1,PEER,PAD1_ESS_BESS1,PAD1_ESS_RN,51.4,122.0,south,Eolian,2.37,2hr
+Palacios,PEER,PALACIOS_BESS1,PALACIOS_RN,9.9,9.9,south,REX Storage Holdings,1.0,1hr
+Paleo,PEER,PALE_ESS_BES1,PALE_ESS_EN,200.8,212.5,west,ENGIE,1.06,1hr
+Pavo 1,PEER,PAVO_ESS_BESS1,PAVO_ESS_ALL,86.5,87.5,west,ENGIE,1.01,1hr
+Pavo 2,PEER,PAVO_ESS_BESS2,PAVO_ESS_ALL,86.5,87.5,west,ENGIE,1.01,1hr
+Photon 1,PEER,PHO_BES1,PHO_ALL,150.0,234.0,south,Enel North America,1.56,2hr
+Photon 2 (SLF),PEER,PHO_BES2,PHO_ALL,150.0,230.0,south,Enel North America,1.53,2hr
+Pirate,PEER,PIRATE1_BESS1,PIRATE_RN,9.9,14.3,south,REX Storage Holdings,1.44,1hr
+Port Lavaca (DGR),PEER,PRTLAVS_BESS1,PTLBES_BESS1,9.9,11.9,south,Key Capture Energy,1.2,1hr
+Prairie Creek,PEER,PRCRK_BESS1,PRCRK_RN,9.9,15.0,north,SMT Energy,1.52,2hr
+Prospect (DGR),PEER,WCOLLOCL_BSS_U1,BSS_U1,9.9,9.9,houston,GlidePath,1.0,1hr
+Pueblo 1 (DGR),PEER,PUEBLO_UNIT1,BRP_PBL1_RN,9.9,10.0,south,ENGIE,1.01,1hr
+Pueblo 2 (DGR),PEER,PUEBLO_UNIT2,BRP_PBL2_RN,9.9,10.0,south,ENGIE,1.01,1hr
+Pyron,PEER,PYR_ESS,PYR_PYRON1,9.9,9.9,west,RWE,1.0,1hr
+Pyron 2A,PEER,PYR_ESS2A,PYR_PYRON1,15.0,15.0,west,RWE,1.0,1hr
+Pyron 2B,PEER,PYR_ESS2B,PYR_PYRON1,15.0,15.0,west,RWE,1.0,1hr
+Queen,PEER,QUEEN_BA_BESS1,QUEEN_BA_RN,50.0,75.0,west,Enel North America,1.5,2hr
+Rabbit Hill,PEER,GEORSO_ESS_1,RHESS2_ESS1,9.9,9.9,south,Ormat,1.0,1hr
+Ranchtown (DGR),PEER,K0_UNIT1,BRP_RN_UNIT1,10.0,9.9,south,ENGIE,0.99,1hr
+Republic Road,PEER,RPUBRDS_ESS1,RPUBRDS_RN,50.0,99.0,north,Key Capture Energy,1.98,2hr
+Rio Grande City (DGR),PEER,RIO_GRAN_BESS,RIOG_ESR_RN,10.0,10.0,south,SMT Energy,1.0,1hr
+Rio Grande City 2,PEER,RIO_GRAN_BESS2,RIOG_ESR2_RN,9.9,22.4,south,Prologis,2.26,2hr
+River Bend,PEER,RBN_BESS1,RBN_BESS1,101.6,150.0,houston,Cypress Creek Renewables,1.48,1hr
+River Valley 1,PEER,RVRVLYS_ESS1,RVRVLYS_ALL,50.0,99.0,south,Key Capture Energy,1.98,2hr
+River Valley 2,PEER,RVRVLYS_ESS2,RVRVLYS_ALL,50.0,100.0,south,Key Capture Energy,2.0,2hr
+Rodeo Ranch U1,PEER,RRANCHES_UNIT1,RRANCHES_ALL,150.0,300.0,west,Plus Power,2.0,2hr
+Rodeo Ranch U2,PEER,RRANCHES_UNIT2,RRANCHES_ALL,150.0,300.0,west,Plus Power,2.0,2hr
+Roseland,PEER,ROSELAND_BESS1,ROSELAND_ALL,50.0,75.0,north,Enel North America,1.5,2hr
+SP TX-12B,PEER,SPTX12B_BES1,SPTX12B_RN,25.1,25.1,west,Ormat,1.0,1hr
+Santa Rosa (DGR),PEER,S_SNROSA_BESS,SROSA_ESR_RN,10.0,10.0,south,SMT Energy,1.0,1hr
+Saragosa (DGR),PEER,SGSA_BESS1,SGSA_DGR,9.9,20.0,west,NW Group,2.02,2hr
+Shamrock (SLF),PEER,SHAMROCK_BESS1,SHAMROCK_RN,99.3,300.0,west,NextEra Energy Resources,3.02,2hr
+Sheep Creek,PEER,SHEEPCRK_BESS1,SHEEPCRK_1,142.0,183.0,west,ENGIE,1.29,1hr
+Silicon Hill 1,PEER,SLCNHLS_ESS1,SLCN_ESS_ALL,50.0,99.0,south,Key Capture Energy,1.98,2hr
+Silicon Hill 2,PEER,SLCNHLS_ESS2,SLCN_ESS_ALL,50.0,99.0,south,Key Capture Energy,1.98,2hr
+Snyder (DGR),PEER,DPCRK_UNIT1,SNY_BESS_RN,10.0,20.0,west,Gore Street Energy Storage Fund,2.0,2hr
+St. Gall 2,PEER,SGAL_BES_BESS2,SG_BES_BESS1,102.5,200.0,west,Jupiter Power,1.95,2hr
+St. Gall I,PEER,SGAL_BES_BESS1,SG_BES_BESS1,104.5,203.0,west,Jupiter Power,1.94,2hr
+Stampede,PEER,STAM_SLR_BESS1,STAM_SLR_ALL,70.0,105.0,north,Enel North America,1.5,2hr
+Sun Valley 1,PEER,SUNVASLR_BESS1,SUNVASLR_ALL,54.1,53.3,north,ENGIE,0.99,1hr
+Sun Valley 2,PEER,SUNVASLR_BESS2,SUNVASLR_ALL,47.3,46.7,north,ENGIE,0.99,1hr
+Sweeny (DGR),PEER,SWEENY_UNIT1,BRP_SWNY_RN,10.0,10.0,houston,ENGIE,1.0,1hr
+Sweetwater (DGR),PEER,SWTWR_UNIT1,SWT_BESS_RN,10.0,20.0,west,Gore Street Energy Storage Fund,2.0,2hr
+Swoose (DGR),PEER,PYOTE_SWOOSEU1,SWOOSE1_U1,9.9,19.8,west,Jupiter Power,2.0,2hr
+Swoose 2,PEER,SWOOSEII_BESS1,SWOOSEII_RN,101.0,204.8,west,Jupiter Power,2.03,2hr
+Telview,PEER,TV_BESS,TV_RN,9.9,21.0,houston,Agilitas Energy,2.12,2hr
+Tidwell Prairie U1,PEER,TDWLPR_1_BESS1,TDWLPR_1_RN,102.0,200.0,north,Jupiter Power,1.96,2hr
+Tidwell Prairie U2,PEER,TDWLPR_1_BESS2,TDWLPR_1_RN,102.0,200.0,north,Jupiter Power,1.96,2hr
+Timberwolf,PEER,TBWF_ESS_BES1,TBWF_ES_BES1,150.0,300.0,west,Spearmint Energy,2.0,2hr
+Tos (DGR),PEER,TOSBATT_UNIT1,RN_TOSBATT,2.0,2.0,west,NRG Energy,1.0,1hr
+Triple Butte (DGR),PEER,BELD_BELU1,TRIPBUT1_RN,7.5,15.0,west,Jupiter Power,2.0,2hr
+Walstrom,PEER,WAL_BESS_1,WAL_RN,200.0,400.0,south,Tesla,2.0,2hr
+Wharton,PEER,WR_BESS1,WR_RN,9.9,21.3,,Agilitas Energy,2.15,2hr
+Wigeon Whistle,PEER,WIG_ESS_BES1,WIG_BESS_RN,122.9,174.0,north,UBS Asset Management,1.42,1hr
+Wolf Tank,PEER,WFTANK_ESS1,WFTANK_ESS1,155.0,173.0,south,Aypa Power,1.12,1hr
+Worsham (DGR),PEER,WORSHAM_BESS1,WRSBES_BESS1,9.9,17.9,west,Key Capture Energy,1.81,2hr
+Zapata 1 (DGR),PEER,ZAPATA_UNIT1,BRP_ZPT1_RN,9.9,10.0,south,ENGIE,1.01,1hr
+Zapata 2 (DGR),PEER,ZAPATA_UNIT2,BRP_ZPT2_RN,9.9,10.0,south,ENGIE,1.01,1hr
+Zier U1,PEER,ZIER_SLR_BES1,ZIER_SLR_ALL,40.08,78.0,south,Cypress Creek Renewables,1.95,2hr
