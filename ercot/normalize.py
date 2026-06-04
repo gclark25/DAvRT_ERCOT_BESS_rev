@@ -113,6 +113,8 @@ def normalize_rt_dispatch(raw: pd.DataFrame, batteries: pd.DataFrame) -> pd.Data
         ["resource_name", "settlement_point", "ts_hour", "ts_interval"], as_index=False
     )["rt_dispatch_mw"].mean()
     return g
+
+
 def esr_resource_map(da_raw: pd.DataFrame, batteries: pd.DataFrame) -> pd.DataFrame:
     """Map post-RTC+B ESR resources to our battery fleet via settlement point.
 
@@ -122,16 +124,17 @@ def esr_resource_map(da_raw: pd.DataFrame, batteries: pd.DataFrame) -> pd.DataFr
     meta (name/owner/nameplate). Matching on settlement point avoids depending on
     the old *_BESS resource names, which RTC+B retired.
     """
-    cols = ["resource_name", "settlement_point", "name", "owner", "nameplate_mw"]
+    meta_cols = ["settlement_point", "name", "owner", "nameplate_mw", "duration_class"]
     if da_raw is None or da_raw.empty:
-        return pd.DataFrame(columns=cols)
+        return pd.DataFrame(columns=["resource_name"] + meta_cols)
     rn = _col(da_raw, "Resource Name", "ResourceName")
     sp = _col(da_raw, "Settlement Point Name", "SettlementPointName", "Settlement Point")
     m = da_raw[[rn, sp]].drop_duplicates()
     m.columns = ["resource_name", "settlement_point"]
-    meta = (batteries[["settlement_point", "name", "owner", "nameplate_mw"]]
-            .drop_duplicates("settlement_point"))
+    have = [c for c in meta_cols if c in batteries.columns]
+    meta = batteries[have].drop_duplicates("settlement_point")
     return m.merge(meta, on="settlement_point", how="inner").reset_index(drop=True)
+
 
 def build_positions(da_awards: pd.DataFrame, rt_dispatch: pd.DataFrame) -> pd.DataFrame:
     """Outer-join DA award + RT dispatch onto the 15-min grid per resource."""

@@ -41,13 +41,36 @@ def write_excel(history: pd.DataFrame) -> Path:
     return out
 
 
+def _duration_groups(monthly: pd.DataFrame) -> list[dict]:
+    """Average $/MW per month by group = '<owner> <duration_class>'
+    (e.g. 'HEN 1hr', 'PEER 2hr'), the four series the dashboard plots."""
+    if monthly.empty:
+        return []
+    m = monthly.copy()
+    if "duration_class" not in m.columns:
+        m["duration_class"] = "1hr"
+    m["group"] = m["owner"].str.title() + " " + m["duration_class"]
+    g = m.groupby(["period", "group"], as_index=False).agg(
+        avg_rev_per_mw=("total_rev_per_mw", "mean"),
+        da_rev=("da_rev", "sum"),
+        rt_rev=("rt_rev", "sum"),
+        n_units=("resource_name", "nunique"),
+    )
+    return json.loads(g.to_json(orient="records"))
+
+
 def write_dashboard_feed(history: pd.DataFrame) -> Path:
     """Compact JSON the static dashboard reads (committed to repo / Pages)."""
     monthly = calc.rollup(history, "month")
+    latest = sorted(monthly["period"].unique())[-1] if not monthly.empty else None
+    leaderboard = (monthly[monthly["period"] == latest]
+                   if latest else monthly.head(0))
     payload = {
-        "generated_keys": list(history.columns),
-        "daily": json.loads(history.tail(2000).to_json(orient="records")),
-        "monthly": json.loads(monthly.to_json(orient="records")),
+        "updated": latest,
+        "groups_monthly": _duration_groups(monthly),
+        "leaderboard": json.loads(
+            leaderboard.sort_values("total_rev_per_mw", ascending=False)
+            .to_json(orient="records")),
     }
     text = json.dumps(payload)
     out = DOCS_DIR / "dashboard.json"   # served by GitHub Pages

@@ -16,6 +16,9 @@ of ERCOT's raw column names:
   prices : [settlement_point, ts_hour, ts_interval, da_price, rt_price]
   positions: [resource_name, settlement_point, ts_hour, ts_interval,
               da_award_mw, rt_dispatch_mw]
+
+`normalize_*` adapters map raw API/disclosure columns into this schema; they are
+confirmed against live data on first run. `settle()` is fully unit-tested.
 """
 from __future__ import annotations
 
@@ -25,7 +28,14 @@ RT_INTERVAL_HOURS = 0.25  # 15-minute RT settlement intervals
 
 
 def settle(positions: pd.DataFrame, prices: pd.DataFrame) -> pd.DataFrame:
-    """Compute DA, RT, and total revenue per resource per 15-min interval."""
+    """Compute DA, RT, and total revenue per resource per 15-min interval.
+
+    positions: resource_name, settlement_point, ts_hour, ts_interval,
+               da_award_mw, rt_dispatch_mw
+    prices:    settlement_point, ts_hour, ts_interval, da_price, rt_price
+
+    Returns one row per resource x interval with da_rev, rt_rev, total_rev.
+    """
     df = positions.merge(
         prices,
         on=["settlement_point", "ts_hour", "ts_interval"],
@@ -54,8 +64,9 @@ def daily_by_battery(settled: pd.DataFrame, batteries: pd.DataFrame) -> pd.DataF
             ["da_rev", "rt_rev", "total_rev"]
         ].sum()
     )
-    meta = batteries[["resource_name", "name", "owner", "nameplate_mw"]]
-    agg = agg.merge(meta, on="resource_name", how="left")
+    meta_cols = [c for c in ["resource_name", "name", "owner", "nameplate_mw",
+                             "duration_class"] if c in batteries.columns]
+    agg = agg.merge(batteries[meta_cols], on="resource_name", how="left")
     agg["total_rev_per_mw"] = agg["total_rev"] / agg["nameplate_mw"]
     return agg
 
@@ -66,7 +77,10 @@ def rollup(daily: pd.DataFrame, period: str) -> pd.DataFrame:
     daily["date"] = pd.to_datetime(daily["date"])
     key = daily["date"].dt.to_period("M" if period == "month" else "Y").astype(str)
     daily["period"] = key
-    g = daily.groupby(["resource_name", "name", "owner", "period"], as_index=False).agg(
+    if "duration_class" not in daily.columns:
+        daily["duration_class"] = "1hr"
+    g = daily.groupby(["resource_name", "name", "owner", "duration_class", "period"],
+                      as_index=False).agg(
         da_rev=("da_rev", "sum"),
         rt_rev=("rt_rev", "sum"),
         total_rev=("total_rev", "sum"),
