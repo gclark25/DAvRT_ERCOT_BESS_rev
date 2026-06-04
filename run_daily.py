@@ -67,18 +67,25 @@ def main(argv=None) -> int:
                         ("DA awards", da_aw_raw), ("RT dispatch", rt_disp_raw)]:
         log.info("  %s: %d rows, cols=%s", name, len(frame), list(frame.columns)[:12])
 
-    # --- normalize ---
+    # --- map ESR resources to our fleet via settlement point (post-RTC+B) ---
+    resmap = normalize.esr_resource_map(da_aw_raw, batteries)
+    log.info("Matched %d ESR resources to the fleet (%d HEN). Sample: %s",
+             len(resmap), int((resmap.get("owner") == "HEN").sum()) if len(resmap) else 0,
+             resmap[["resource_name", "settlement_point"]].head(8).to_dict("records")
+             if len(resmap) else "none")
+
+    # --- normalize (disclosure joins use the ESR resource map, not config) ---
     da_px = normalize.normalize_da_prices(da_px_raw)
     rt_px = normalize.normalize_rt_prices(rt_px_raw)
-    da_aw = normalize.normalize_da_awards(da_aw_raw, batteries)
-    rt_disp = normalize.normalize_rt_dispatch(rt_disp_raw, batteries)
+    da_aw = normalize.normalize_da_awards(da_aw_raw, resmap)
+    rt_disp = normalize.normalize_rt_dispatch(rt_disp_raw, resmap)
 
     prices = normalize.build_prices(da_px, rt_px)
     positions = normalize.build_positions(da_aw, rt_disp)
 
     # --- settle + aggregate ---
     settled = calc.settle(positions, prices)
-    daily = calc.daily_by_battery(settled, batteries)
+    daily = calc.daily_by_battery(settled, resmap)
     log.info("Computed %d battery-day revenue rows", len(daily))
 
     # --- persist + report ---
