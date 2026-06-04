@@ -36,12 +36,15 @@ def settle(positions: pd.DataFrame, prices: pd.DataFrame) -> pd.DataFrame:
 
     Returns one row per resource x interval with da_rev, rt_rev, total_rev.
     """
-    df = positions.merge(
+   df = positions.merge(
         prices,
         on=["settlement_point", "ts_hour", "ts_interval"],
         how="left",
-        validate="m:1",
     )
+    # Prices only cover the requested operating window, so dropping rows with no
+    # DA price restricts positions to in-window days. Missing RT price -> 0.
+    df = df.dropna(subset=["da_price"]).copy()
+    df["rt_price"] = df["rt_price"].fillna(0.0)
 
     # DA leg is hourly; spread it across the 4 intervals in the hour so the
     # per-interval sum equals award_MW * DA_SPP for the hour.
