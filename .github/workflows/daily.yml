@@ -1,0 +1,60 @@
+name: Daily DA vs RT backtest
+
+on:
+  schedule:
+    # 13:00 UTC = ~08:00 America/Chicago. ERCOT next-day data is settled by then.
+    - cron: "0 13 * * *"
+  workflow_dispatch:        # allow manual runs from the Actions tab
+    inputs:
+      start:
+        description: "Operating day start (YYYY-MM-DD), optional"
+        required: false
+      end:
+        description: "Operating day end (YYYY-MM-DD), optional"
+        required: false
+
+permissions:
+  contents: write           # allow committing updated data/reports back
+
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: pip install -r requirements.txt
+
+      - name: Run backtest
+        env:
+          ERCOT_USERNAME: ${{ secrets.ERCOT_USERNAME }}
+          ERCOT_PASSWORD: ${{ secrets.ERCOT_PASSWORD }}
+          ERCOT_SUBSCRIPTION_KEY: ${{ secrets.ERCOT_SUBSCRIPTION_KEY }}
+        run: |
+          if [ -n "${{ inputs.start }}" ] && [ -n "${{ inputs.end }}" ]; then
+            python run_daily.py --start "${{ inputs.start }}" --end "${{ inputs.end }}"
+          else
+            python run_daily.py
+          fi
+
+      - name: Commit updated data + reports
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/ reports/ || true
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Daily backtest update $(date -u +%F)"
+            git push
+          fi
+
+      - name: Upload reports as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backtest-reports
+          path: reports/
