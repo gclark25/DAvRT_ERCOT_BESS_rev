@@ -1,0 +1,8 @@
+name,owner,resource_name,settlement_point,nameplate_mw
+# owner = HEN for your assets, PEER for other ERCOT batteries.
+# resource_name = ERCOT Gen Resource Name as it appears in the 60-day disclosure CSVs (used to pull awards/dispatch).
+# settlement_point = resource node name used for DA/RT prices (often equals the resource node, e.g. SOMENODE_RN or _ALL).
+# nameplate_mw = installed power rating, for $/MW normalization.
+# Example rows (replace with your real lists):
+Example_HEN_BESS_1,HEN,EXMPLE_BESS1,EXMPLE_RN,100
+Example_Peer_BESS_1,PEER,PEERBES_UNIT1,PEERBES_RN,200

@@ -1,0 +1,115 @@
+"""Adapters mapping raw ERCOT frames -> the calc's normalized schema.
+
+The calc works on a 15-minute grid keyed by (settlement_point, ts_hour,
+ts_interval) where ts_interval is 1-4 within the operating hour:
+
+  prices:    settlement_point, ts_hour, ts_interval, da_price, rt_price
+  positions: resource_name, settlement_point, ts_hour, ts_interval,
+             da_award_mw, rt_dispatch_mw
+
+Raw cadences differ, so we resample onto the 15-min grid:
+  - DA price  (hourly)  -> broadcast to the hour's 4 intervals
+  - RT price  (15-min)  -> 1:1
+  - DA award  (hourly)  -> broadcast to the hour's 4 intervals
+  - RT base point (5-min) -> mean of the three 5-min points in each 15-min interval
+
+Column names below use ERCOT's documented names with fallbacks. The first live
+Actions run prints any unmatched columns so these lists can be corrected.
+"""
+from __future__ import annotations
+
+import pandas as pd
+
+
+def _col(df: pd.DataFrame, *candidates: str) -> str:
+    lower = {c.lower(): c for c in df.columns}
+    for cand in candidates:
+        if cand.lower() in lower:
+            return lower[cand.lower()]
+    raise KeyError(
+        f"None of {candidates} found in columns: {list(df.columns)}"
+    )
+
+
+def _hour_ending_to_grid(df: pd.DataFrame, date_col: str, he_col: str) -> pd.DataFrame:
+    """Build ts_hour from delivery date + hourEnding (1-24)."""
+    d = pd.to_datetime(df[date_col])
+    he = pd.to_numeric(df[he_col], errors="coerce").astype("Int64")
+    # hourEnding N covers hour starting N-1
+    df["ts_hour"] = d + pd.to_timedelta(he.astype("float") - 1, unit="h")
+    return df
+
+
+def normalize_da_prices(raw: pd.DataFrame) -> pd.DataFrame:
+    date_col = _col(raw, "deliveryDate", "DeliveryDate")
+    he_col = _col(raw, "hourEnding", "HourEnding")
+    px_col = _col(raw, "settlementPointPrice", "SettlementPointPrice", "spp")
+    sp_col = _col(raw, "settlementPoint", "SettlementPoint", "settlementPointName")
+    df = raw.rename(columns={sp_col: "settlement_point"})
+    df = _hour_ending_to_grid(df, date_col, he_col)
+    df["da_price"] = pd.to_numeric(df[px_col], errors="coerce")
+    base = df[["settlement_point", "ts_hour", "da_price"]]
+    # broadcast hourly DA price across 4 intervals
+    out = base.loc[base.index.repeat(4)].copy()
+    out["ts_interval"] = list(range(1, 5)) * len(base)
+    return out.reset_index(drop=True)
+
+
+def normalize_rt_prices(raw: pd.DataFrame) -> pd.DataFrame:
+    date_col = _col(raw, "deliveryDate", "DeliveryDate")
+    he_col = _col(raw, "deliveryHour", "hourEnding", "HourEnding")
+    interval_col = _col(raw, "deliveryInterval", "DeliveryInterval", "intervalEnding")
+    px_col = _col(raw, "settlementPointPrice", "SettlementPointPrice", "spp")
+    sp_col = _col(raw, "settlementPoint", "SettlementPoint", "settlementPointName")
+    df = raw.rename(columns={sp_col: "settlement_point"})
+    df = _hour_ending_to_grid(df, date_col, he_col)
+    df["ts_interval"] = pd.to_numeric(df[interval_col], errors="coerce").astype("Int64")
+    df["rt_price"] = pd.to_numeric(df[px_col], errors="coerce")
+    return df[["settlement_point", "ts_hour", "ts_interval", "rt_price"]].reset_index(drop=True)
+
+
+def normalize_da_awards(raw: pd.DataFrame, batteries: pd.DataFrame) -> pd.DataFrame:
+    """60d_DAM_Gen_Resource_Data -> hourly DA award per resource, on 15-min grid."""
+    date_col = _col(raw, "Delivery Date", "DeliveryDate", "deliveryDate")
+    he_col = _col(raw, "Hour Ending", "HourEnding", "hourEnding")
+    res_col = _col(raw, "Resource Name", "ResourceName", "resourceName")
+    award_col = _col(raw, "Awarded Quantity", "Energy Awarded Quantity", "awardedQuantity")
+    df = raw.rename(columns={res_col: "resource_name"})
+    df = _hour_ending_to_grid(df, date_col, he_col)
+    df["da_award_mw"] = pd.to_numeric(df[award_col], errors="coerce")
+    df = df.merge(batteries[["resource_name", "settlement_point"]], on="resource_name", how="inner")
+    base = df[["resource_name", "settlement_point", "ts_hour", "da_award_mw"]]
+    out = base.loc[base.index.repeat(4)].copy()
+    out["ts_interval"] = list(range(1, 5)) * len(base)
+    return out.reset_index(drop=True)
+
+
+def normalize_rt_dispatch(raw: pd.DataFrame, batteries: pd.DataFrame) -> pd.DataFrame:
+    """60d_SCED_Gen_Resource_Data base points -> 15-min mean dispatch per resource."""
+    ts_col = _col(raw, "SCED Time Stamp", "SCEDTimestamp", "scedTimestamp")
+    res_col = _col(raw, "Resource Name", "ResourceName", "resourceName")
+    bp_col = _col(raw, "Base Point", "BasePoint", "basePoint")
+    df = raw.rename(columns={res_col: "resource_name"})
+    ts = pd.to_datetime(df[ts_col])
+    df["ts_hour"] = ts.dt.floor("h")
+    df["ts_interval"] = (ts.dt.minute // 15 + 1).astype(int)
+    df["rt_dispatch_mw"] = pd.to_numeric(df[bp_col], errors="coerce")
+    df = df.merge(batteries[["resource_name", "settlement_point"]], on="resource_name", how="inner")
+    g = df.groupby(
+        ["resource_name", "settlement_point", "ts_hour", "ts_interval"], as_index=False
+    )["rt_dispatch_mw"].mean()
+    return g
+
+
+def build_positions(da_awards: pd.DataFrame, rt_dispatch: pd.DataFrame) -> pd.DataFrame:
+    """Outer-join DA award + RT dispatch onto the 15-min grid per resource."""
+    keys = ["resource_name", "settlement_point", "ts_hour", "ts_interval"]
+    pos = da_awards.merge(rt_dispatch, on=keys, how="outer")
+    pos["da_award_mw"] = pos["da_award_mw"].fillna(0.0)
+    pos["rt_dispatch_mw"] = pos["rt_dispatch_mw"].fillna(0.0)
+    return pos
+
+
+def build_prices(da_prices: pd.DataFrame, rt_prices: pd.DataFrame) -> pd.DataFrame:
+    keys = ["settlement_point", "ts_hour", "ts_interval"]
+    return da_prices.merge(rt_prices, on=keys, how="outer")
