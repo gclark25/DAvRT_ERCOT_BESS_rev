@@ -32,11 +32,17 @@ def _col(df: pd.DataFrame, *candidates: str) -> str:
 
 
 def _hour_ending_to_grid(df: pd.DataFrame, date_col: str, he_col: str) -> pd.DataFrame:
-    """Build ts_hour from delivery date + hourEnding (1-24)."""
-    d = pd.to_datetime(df[date_col])
-    he = pd.to_numeric(df[he_col], errors="coerce").astype("Int64")
-    # hourEnding N covers hour starting N-1
-    df["ts_hour"] = d + pd.to_timedelta(he.astype("float") - 1, unit="h")
+    """Build ts_hour from delivery date + hourEnding.
+
+    ERCOT reports hourEnding as "HH:00" (e.g. "01:00".."24:00") OR as a plain
+    integer 1-24, so we take the portion before any ':' and coerce to a number.
+    hourEnding N covers the hour starting N-1.
+    """
+    df = df.copy()
+    d = pd.to_datetime(df[date_col], errors="coerce")
+    he = pd.to_numeric(df[he_col].astype(str).str.strip().str.split(":").str[0],
+                       errors="coerce")
+    df["ts_hour"] = d + pd.to_timedelta(he - 1, unit="h")
     return df
 
 
@@ -120,4 +126,7 @@ def build_positions(da_awards: pd.DataFrame, rt_dispatch: pd.DataFrame) -> pd.Da
 
 def build_prices(da_prices: pd.DataFrame, rt_prices: pd.DataFrame) -> pd.DataFrame:
     keys = ["settlement_point", "ts_hour", "ts_interval"]
-    return da_prices.merge(rt_prices, on=keys, how="outer")
+    px = da_prices.merge(rt_prices, on=keys, how="outer")
+    px = px.dropna(subset=["ts_hour"])          # drop any unparsable timestamps
+    px = px.drop_duplicates(subset=keys)        # one price row per key
+    return px.reset_index(drop=True)
