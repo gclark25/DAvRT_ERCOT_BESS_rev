@@ -68,8 +68,14 @@ def normalize_rt_prices(raw: pd.DataFrame) -> pd.DataFrame:
     return df[["settlement_point", "ts_hour", "ts_interval", "rt_price"]].reset_index(drop=True)
 
 
+_AWARD_COLS = ["resource_name", "settlement_point", "ts_hour", "ts_interval", "da_award_mw"]
+_DISP_COLS = ["resource_name", "settlement_point", "ts_hour", "ts_interval", "rt_dispatch_mw"]
+
+
 def normalize_da_awards(raw: pd.DataFrame, batteries: pd.DataFrame) -> pd.DataFrame:
     """60d_DAM_Gen_Resource_Data -> hourly DA award per resource, on 15-min grid."""
+    if raw is None or raw.empty:
+        return pd.DataFrame(columns=_AWARD_COLS)
     date_col = _col(raw, "Delivery Date", "DeliveryDate", "deliveryDate")
     he_col = _col(raw, "Hour Ending", "HourEnding", "hourEnding")
     res_col = _col(raw, "Resource Name", "ResourceName", "resourceName")
@@ -86,6 +92,8 @@ def normalize_da_awards(raw: pd.DataFrame, batteries: pd.DataFrame) -> pd.DataFr
 
 def normalize_rt_dispatch(raw: pd.DataFrame, batteries: pd.DataFrame) -> pd.DataFrame:
     """60d_SCED_Gen_Resource_Data base points -> 15-min mean dispatch per resource."""
+    if raw is None or raw.empty:
+        return pd.DataFrame(columns=_DISP_COLS)
     ts_col = _col(raw, "SCED Time Stamp", "SCEDTimestamp", "scedTimestamp")
     res_col = _col(raw, "Resource Name", "ResourceName", "resourceName")
     bp_col = _col(raw, "Base Point", "BasePoint", "basePoint")
