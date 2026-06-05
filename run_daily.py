@@ -1,150 +1,86 @@
-"""Daily orchestrator: fetch -> normalize -> settle -> store -> report.
-
-Run locally:   python run_daily.py
-In GitHub Actions: invoked by .github/workflows/daily.yml on a cron, with
-credentials supplied as repo Secrets (env vars).
-
-The 60-day disclosure lag means peer awards/dispatch for an operating day only
-post ~60 days later. Each run therefore (re)processes a window of operating days
-that have just become fully available, and the store upserts idempotently.
-"""
+"""Generate Excel rollups + a JSON feed for the dashboard."""
 from __future__ import annotations
 
-import argparse
-import logging
-import os
-import sys
-from datetime import date, timedelta
+import json
+from pathlib import Path
 
 import pandas as pd
 
-from ercot.auth import ErcotAuth
-from ercot.client import ErcotClient
-from ercot import config, products, normalize, calc, store, reports
-from ercot.batteries import load_batteries, settlement_points
-
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
-log = logging.getLogger("backtest")
-
-# Scope: post-RTC+B only. Default window runs from this date through the latest
-# operating day whose 60-day disclosure has posted (today - DISCLOSURE_LAG).
-START_DATE = date(2026, 1, 1)
-DISCLOSURE_LAG = 64  # calendar days; safe margin past the 60-day posting
+from .config import REPORTS_DIR, DATA_DIR, DOCS_DIR
+from . import calc
 
 
-def parse_args(argv=None):
-    p = argparse.ArgumentParser()
-    p.add_argument("--start", help="operating day start YYYY-MM-DD (overrides lag window)")
-    p.add_argument("--end", help="operating day end YYYY-MM-DD")
-    p.add_argument("--rebuild", action="store_true",
-                   help="recompute the whole window, overwriting stored days")
-    return p.parse_args(argv)
+def _rank(df: pd.DataFrame, value: str) -> pd.DataFrame:
+    df = df.sort_values(value, ascending=False).reset_index(drop=True)
+    df.insert(0, "rank", df.index + 1)
+    return df
 
 
-def main(argv=None) -> int:
-    args = parse_args(argv)
-    today = date.today()
-    d0 = date.fromisoformat(args.start) if args.start else START_DATE
-    d1 = date.fromisoformat(args.end) if args.end else today - timedelta(days=DISCLOSURE_LAG)
-    d0 = max(d0, START_DATE)              # never go before the RTC+B scope start
-    log.info("Target window %s .. %s", d0, d1)
-    if d1 < d0:
-        log.info("Window empty - nothing to process."); return 0
+def write_excel(history: pd.DataFrame) -> Path:
+    """Write a single workbook with daily, monthly, yearly sheets + peer ranks."""
+    out = REPORTS_DIR / "da_vs_rt_backtest.xlsx"
+    monthly = calc.rollup(history, "month")
+    yearly = calc.rollup(history, "year")
 
-    batteries = load_batteries()
-    sps = settlement_points(batteries)
-    log.info("Loaded %d batteries (%d settlement points)", len(batteries), len(sps))
+    with pd.ExcelWriter(out, engine="openpyxl") as xl:
+        history.sort_values(["date", "total_rev"], ascending=[True, False]).to_excel(
+            xl, sheet_name="Daily", index=False
+        )
+        _rank(monthly, "total_rev_per_mw").to_excel(xl, sheet_name="Monthly", index=False)
+        _rank(yearly, "total_rev_per_mw").to_excel(xl, sheet_name="Yearly", index=False)
 
-    auth = ErcotAuth(config.require("ERCOT_USERNAME"), config.require("ERCOT_PASSWORD"))
-    client = ErcotClient(auth, config.require("ERCOT_SUBSCRIPTION_KEY"))
-
-    # Incremental: process only operating days not already in history (skipped in
-    # --rebuild mode, which recomputes the whole window and overwrites via upsert).
-    if args.rebuild:
-        log.info("REBUILD: recomputing full window %s .. %s, ignoring stored days.", d0, d1)
-    else:
-        done = set()
-        hist = store.load_history()
-        if not hist.empty:
-            done = set(pd.to_datetime(hist["date"]).dt.date)
-        all_days = [d0 + timedelta(days=i) for i in range((d1 - d0).days + 1)]
-        missing = [d for d in all_days if d not in done]
-        if not missing:
-            log.info("Up to date through %s (%d operating days stored).", d1, len(done))
-            return 0
-        d0, d1 = missing[0], missing[-1]
-        log.info("Processing %d missing operating days: %s .. %s", len(missing), d0, d1)
-
-    # Process one calendar month at a time. This bounds each price request and
-    # disclosure batch (a full-year span would time out / exhaust memory), and
-    # upserts after each chunk so progress persists.
-    total = 0
-    for c0, c1 in _month_chunks(d0, d1):
-        log.info("=== chunk %s .. %s ===", c0, c1)
-        da_px_raw = products.dam_prices(client, c0, c1, sps)
-        rt_px_raw = products.rtm_prices(client, c0, c1, sps)
-        da_aw_raw = products.dam_awards(client, c0, c1)
-        rt_disp_raw = products.sced_dispatch(client, c0, c1)
-        rt_as_price_raw = products.rt_as_prices(client, c0, c1)
-
-        resmap = normalize.esr_resource_map(da_aw_raw, batteries)
-        log.info("  matched %d ESR resources (%d HEN)", len(resmap),
-                 int((resmap.get("owner") == "HEN").sum()) if len(resmap) else 0)
-
-        prices = normalize.build_prices(normalize.normalize_da_prices(da_px_raw),
-                                        normalize.normalize_rt_prices(rt_px_raw))
-        positions = normalize.build_positions(
-            normalize.normalize_da_awards(da_aw_raw, resmap),
-            normalize.normalize_rt_dispatch(rt_disp_raw, resmap))
-        daily = calc.daily_by_battery(calc.settle(positions, prices), resmap)
-
-        # ancillary-service revenue = DA leg (award x DA MCPC)
-        #   + RT two-settlement offset ((RT award - DA award) x RT MCPC)
-        da_as = normalize.normalize_da_as(da_aw_raw, resmap)
-        rt_as = normalize.normalize_rt_as_revenue(da_aw_raw, rt_disp_raw,
-                                                  rt_as_price_raw, resmap)
-        # --- AS diagnostics (remove once confirmed) ---
-        def _rawsum(df, col):
-            return (float(pd.to_numeric(df[col], errors="coerce").fillna(0).sum())
-                    if col in df.columns else "MISSING")
-        log.info("  ASDIAG da_as_sum=%s rt_as_sum=%s | raw 'RegUp Awarded'=%s "
-                 "'AS Awards REGUP'=%s | priceRows=%d ASTypes=%s",
-                 round(float(da_as["as_rev"].sum()), 0) if len(da_as) else "EMPTY",
-                 round(float(rt_as["rt_as_rev"].sum()), 0) if len(rt_as) else "EMPTY",
-                 _rawsum(da_aw_raw, "RegUp Awarded"),
-                 _rawsum(rt_disp_raw, "AS Awards REGUP"),
-                 len(rt_as_price_raw),
-                 sorted(rt_as_price_raw["ASType"].astype(str).unique())[:7]
-                 if "ASType" in rt_as_price_raw.columns else "noASTypeCol")
-        daily = daily.merge(da_as, on=["resource_name", "date"], how="left")
-        daily = daily.merge(rt_as, on=["resource_name", "date"], how="left")
-        daily["as_rev"] = daily["as_rev"].fillna(0.0) + daily["rt_as_rev"].fillna(0.0)
-        daily = daily.drop(columns=["rt_as_rev"])
-        daily["total_rev"] = daily["da_rev"] + daily["rt_rev"] + daily["as_rev"]
-        daily["total_rev_per_mw"] = daily["total_rev"] / daily["nameplate_mw"]
-        store.upsert(daily)
-        total += len(daily)
-        log.info("  chunk added %d battery-day rows", len(daily))
-
-    history = store.load_history()
-    xlsx = reports.write_excel(history)
-    feed = reports.write_dashboard_feed(history)
-    log.info("Done: +%d rows this run; history now %d rows. Wrote %s, %s",
-             total, len(history), xlsx, feed)
-    return 0
+        # HEN vs peer summary (latest year, avg $/MW by owner)
+        if not yearly.empty:
+            summary = (
+                yearly.groupby("owner", as_index=False)
+                .agg(avg_total_rev_per_mw=("total_rev_per_mw", "mean"),
+                     dart_energy=("dart_energy", "sum"),
+                     rt_energy=("rt_energy", "sum"),
+                     dart_as=("dart_as", "sum"),
+                     rt_as=("rt_as", "sum"))
+            )
+            summary.to_excel(xl, sheet_name="HEN_vs_Peers", index=False)
+    return out
 
 
-def _month_chunks(d0: date, d1: date):
-    """Yield (start, end) date pairs, each within a single calendar month."""
-    cur = d0
-    while cur <= d1:
-        if cur.month == 12:
-            month_end = date(cur.year, 12, 31)
-        else:
-            month_end = date(cur.year, cur.month + 1, 1) - timedelta(days=1)
-        yield cur, min(month_end, d1)
-        cur = min(month_end, d1) + timedelta(days=1)
+def _duration_groups(monthly: pd.DataFrame) -> list[dict]:
+    """Average $/MW per month by group = '<owner> <duration_class>'
+    (e.g. 'HEN 1hr', 'PEER 2hr'), the four series the dashboard plots."""
+    if monthly.empty:
+        return []
+    m = monthly.copy()
+    if "duration_class" not in m.columns:
+        m["duration_class"] = "1hr"
+    m["group"] = m["owner"].str.title() + " " + m["duration_class"]
+    for c in ("dart_energy", "rt_energy", "dart_as", "rt_as"):
+        if c not in m.columns:
+            m[c] = 0.0
+    g = m.groupby(["period", "group"], as_index=False).agg(
+        avg_rev_per_mw=("total_rev_per_mw", "mean"),
+        dart_energy=("dart_energy", "sum"),
+        rt_energy=("rt_energy", "sum"),
+        dart_as=("dart_as", "sum"),
+        rt_as=("rt_as", "sum"),
+        n_units=("resource_name", "nunique"),
+    )
+    return json.loads(g.to_json(orient="records"))
 
 
-if __name__ == "__main__":
-    sys.exit(main())
+def write_dashboard_feed(history: pd.DataFrame) -> Path:
+    """Compact JSON the static dashboard reads (committed to repo / Pages)."""
+    monthly = calc.rollup(history, "month")
+    latest = sorted(monthly["period"].unique())[-1] if not monthly.empty else None
+    leaderboard = (monthly[monthly["period"] == latest]
+                   if latest else monthly.head(0))
+    payload = {
+        "updated": latest,
+        "groups_monthly": _duration_groups(monthly),
+        "leaderboard": json.loads(
+            leaderboard.sort_values("total_rev_per_mw", ascending=False)
+            .to_json(orient="records")),
+    }
+    text = json.dumps(payload)
+    out = DOCS_DIR / "dashboard.json"   # served by GitHub Pages
+    out.write_text(text)
+    (DATA_DIR / "dashboard.json").write_text(text)  # also keep with data
+    return out
