@@ -79,10 +79,13 @@ def rollup(daily: pd.DataFrame, period: str) -> pd.DataFrame:
     daily["period"] = key
     if "duration_class" not in daily.columns:
         daily["duration_class"] = "1hr"
+    if "as_rev" not in daily.columns:
+        daily["as_rev"] = 0.0
     g = daily.groupby(["resource_name", "name", "owner", "duration_class", "period"],
                       as_index=False).agg(
         da_rev=("da_rev", "sum"),
         rt_rev=("rt_rev", "sum"),
+        as_rev=("as_rev", "sum"),
         total_rev=("total_rev", "sum"),
         avg_daily_total=("total_rev", "mean"),
         nameplate_mw=("nameplate_mw", "first"),
