@@ -107,41 +107,52 @@ def _download_zip(client: ErcotClient, emil: str, doc_id) -> bytes:
     return resp.content
 
 
-def _read_members(zbytes: bytes, fragment: str, logged: bool = False) -> pd.DataFrame:
+# Only these columns are needed downstream; the ESR SCED file has ~190 columns,
+# so restricting the parse keeps memory bounded over a full-year backfill.
+AWARD_COLS = {"Delivery Date", "Hour Ending", "Resource Name",
+              "Awarded Quantity", "Settlement Point Name"}
+DISPATCH_COLS = {"SCED Time Stamp", "Resource Name", "Base Point"}
+
+
+def _read_members(zbytes: bytes, fragment: str, usecols: set | None = None) -> pd.DataFrame:
+    keep = (lambda c: c in usecols) if usecols else None
     with zipfile.ZipFile(io.BytesIO(zbytes)) as zf:
         all_names = zf.namelist()
         names = [n for n in all_names if fragment in n]
         if not names:
             for n in all_names:
                 if n.lower().endswith(".zip"):
-                    inner = _read_members(zf.read(n), fragment, logged=True)
+                    inner = _read_members(zf.read(n), fragment, usecols)
                     if not inner.empty:
                         return inner
             return pd.DataFrame()
-        frames = [pd.read_csv(zf.open(n)) for n in names]
+        frames = [pd.read_csv(zf.open(n), usecols=keep) for n in names]
     return pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
 
 
 def _fetch_disclosure(client: ErcotClient, emil: str, fragment: str,
-                      op_d0: date, op_d1: date) -> pd.DataFrame:
+                      op_d0: date, op_d1: date, usecols: set | None = None) -> pd.DataFrame:
     docs = _archive_docs(client, emil, op_d0, op_d1)
     frames = []
     for doc in docs:
         doc_id = _doc_id(doc)
         if doc_id is None:
             continue
-        df = _read_members(_download_zip(client, emil, doc_id), fragment)
+        df = _read_members(_download_zip(client, emil, doc_id), fragment, usecols)
         if not df.empty:
-            log.info("  doc %s -> %d rows, cols=%s", doc_id, len(df), list(df.columns)[:14])
             frames.append(df)
-    return pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
+    out = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
+    log.info("  %s: %d docs, %d rows", emil, len(docs), len(out))
+    return out
 
 
 def dam_awards(client: ErcotClient, op_d0: date, op_d1: date) -> pd.DataFrame:
-    """DA Gen Resource energy awards from the 60-Day DAM disclosure."""
-    return _fetch_disclosure(client, DAM_DISCLOSURE, DAM_GEN_CSV_FRAGMENT, op_d0, op_d1)
+    """DA ESR energy awards from the 60-Day DAM disclosure."""
+    return _fetch_disclosure(client, DAM_DISCLOSURE, DAM_GEN_CSV_FRAGMENT,
+                             op_d0, op_d1, AWARD_COLS)
 
 
 def sced_dispatch(client: ErcotClient, op_d0: date, op_d1: date) -> pd.DataFrame:
-    """RT Gen Resource base points (dispatch) from the 60-Day SCED disclosure."""
-    return _fetch_disclosure(client, SCED_DISCLOSURE, SCED_GEN_CSV_FRAGMENT, op_d0, op_d1)
+    """ESR base points (dispatch) from the 60-Day SCED disclosure."""
+    return _fetch_disclosure(client, SCED_DISCLOSURE, SCED_GEN_CSV_FRAGMENT,
+                             op_d0, op_d1, DISPATCH_COLS)
