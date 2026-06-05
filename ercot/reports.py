@@ -29,33 +29,38 @@ def write_excel(history: pd.DataFrame) -> Path:
         _rank(monthly, "total_rev_per_mw").to_excel(xl, sheet_name="Monthly", index=False)
         _rank(yearly, "total_rev_per_mw").to_excel(xl, sheet_name="Yearly", index=False)
 
+        # HEN vs peer summary (latest year, avg $/MW by owner)
         if not yearly.empty:
             summary = (
                 yearly.groupby("owner", as_index=False)
                 .agg(avg_total_rev_per_mw=("total_rev_per_mw", "mean"),
-                     total_da_rev=("da_rev", "sum"),
-                     total_rt_rev=("rt_rev", "sum"),
-                     total_as_rev=("as_rev", "sum"))
+                     dart_energy=("dart_energy", "sum"),
+                     rt_energy=("rt_energy", "sum"),
+                     dart_as=("dart_as", "sum"),
+                     rt_as=("rt_as", "sum"))
             )
             summary.to_excel(xl, sheet_name="HEN_vs_Peers", index=False)
     return out
 
 
 def _duration_groups(monthly: pd.DataFrame) -> list[dict]:
-    """Average $/MW per month by group = '<owner> <duration_class>'."""
+    """Average $/MW per month by group = '<owner> <duration_class>'
+    (e.g. 'HEN 1hr', 'PEER 2hr'), the four series the dashboard plots."""
     if monthly.empty:
         return []
     m = monthly.copy()
     if "duration_class" not in m.columns:
         m["duration_class"] = "1hr"
     m["group"] = m["owner"].str.title() + " " + m["duration_class"]
-    if "as_rev" not in m.columns:
-        m["as_rev"] = 0.0
+    for c in ("dart_energy", "rt_energy", "dart_as", "rt_as"):
+        if c not in m.columns:
+            m[c] = 0.0
     g = m.groupby(["period", "group"], as_index=False).agg(
         avg_rev_per_mw=("total_rev_per_mw", "mean"),
-        da_rev=("da_rev", "sum"),
-        rt_rev=("rt_rev", "sum"),
-        as_rev=("as_rev", "sum"),
+        dart_energy=("dart_energy", "sum"),
+        rt_energy=("rt_energy", "sum"),
+        dart_as=("dart_as", "sum"),
+        rt_as=("rt_as", "sum"),
         n_units=("resource_name", "nunique"),
     )
     return json.loads(g.to_json(orient="records"))
@@ -75,7 +80,7 @@ def write_dashboard_feed(history: pd.DataFrame) -> Path:
             .to_json(orient="records")),
     }
     text = json.dumps(payload)
-    out = DOCS_DIR / "dashboard.json"
+    out = DOCS_DIR / "dashboard.json"   # served by GitHub Pages
     out.write_text(text)
-    (DATA_DIR / "dashboard.json").write_text(text)
+    (DATA_DIR / "dashboard.json").write_text(text)  # also keep with data
     return out
