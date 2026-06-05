@@ -12,8 +12,8 @@ on:
       end:
         description: "Operating day end (YYYY-MM-DD), optional"
         required: false
-      discover:
-        description: "Set to 'true' to probe the RT AS price endpoint and exit"
+      rebuild:
+        description: "Set to 'true' to recompute the whole window, overwriting stored days"
         required: false
         default: ""
 
@@ -38,13 +38,15 @@ jobs:
           ERCOT_USERNAME: ${{ secrets.ERCOT_USERNAME }}
           ERCOT_PASSWORD: ${{ secrets.ERCOT_PASSWORD }}
           ERCOT_SUBSCRIPTION_KEY: ${{ secrets.ERCOT_SUBSCRIPTION_KEY }}
-          DISCOVER_AS: ${{ inputs.discover }}
         run: |
+          ARGS=""
           if [ -n "${{ inputs.start }}" ] && [ -n "${{ inputs.end }}" ]; then
-            python run_daily.py --start "${{ inputs.start }}" --end "${{ inputs.end }}"
-          else
-            python run_daily.py
+            ARGS="--start ${{ inputs.start }} --end ${{ inputs.end }}"
           fi
+          if [ "${{ inputs.rebuild }}" = "true" ]; then
+            ARGS="$ARGS --rebuild"
+          fi
+          python run_daily.py $ARGS
 
       - name: Commit updated data + reports
         run: |
