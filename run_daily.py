@@ -56,11 +56,6 @@ def main(argv=None) -> int:
     auth = ErcotAuth(config.require("ERCOT_USERNAME"), config.require("ERCOT_PASSWORD"))
     client = ErcotClient(auth, config.require("ERCOT_SUBSCRIPTION_KEY"))
 
-    # One-time discovery of the RT AS clearing-price endpoint (remove once known).
-    if os.environ.get("DISCOVER_AS"):
-        products.discover_rt_as_endpoint(client)
-        return 0
-
     # Incremental: process only operating days not already in history. The first
     # run backfills the whole window; later runs add just the newly-posted days.
     done = set()
@@ -85,6 +80,7 @@ def main(argv=None) -> int:
         rt_px_raw = products.rtm_prices(client, c0, c1, sps)
         da_aw_raw = products.dam_awards(client, c0, c1)
         rt_disp_raw = products.sced_dispatch(client, c0, c1)
+        rt_as_price_raw = products.rt_as_prices(client, c0, c1)
 
         resmap = normalize.esr_resource_map(da_aw_raw, batteries)
         log.info("  matched %d ESR resources (%d HEN)", len(resmap),
@@ -96,10 +92,16 @@ def main(argv=None) -> int:
             normalize.normalize_da_awards(da_aw_raw, resmap),
             normalize.normalize_rt_dispatch(rt_disp_raw, resmap))
         daily = calc.daily_by_battery(calc.settle(positions, prices), resmap)
-        # add DA ancillary-service revenue (RegUp/RegDown/RRS/ECRS/NonSpin)
-        as_daily = normalize.normalize_da_as(da_aw_raw, resmap)
-        daily = daily.merge(as_daily, on=["resource_name", "date"], how="left")
-        daily["as_rev"] = daily["as_rev"].fillna(0.0)
+
+        # ancillary-service revenue = DA leg (award x DA MCPC)
+        #   + RT two-settlement offset ((RT award - DA award) x RT MCPC)
+        da_as = normalize.normalize_da_as(da_aw_raw, resmap)
+        rt_as = normalize.normalize_rt_as_revenue(da_aw_raw, rt_disp_raw,
+                                                  rt_as_price_raw, resmap)
+        daily = daily.merge(da_as, on=["resource_name", "date"], how="left")
+        daily = daily.merge(rt_as, on=["resource_name", "date"], how="left")
+        daily["as_rev"] = daily["as_rev"].fillna(0.0) + daily["rt_as_rev"].fillna(0.0)
+        daily = daily.drop(columns=["rt_as_rev"])
         daily["total_rev"] = daily["da_rev"] + daily["rt_rev"] + daily["as_rev"]
         daily["total_rev_per_mw"] = daily["total_rev"] / daily["nameplate_mw"]
         store.upsert(daily)
