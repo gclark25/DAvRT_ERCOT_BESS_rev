@@ -36,6 +36,8 @@ def parse_args(argv=None):
     p = argparse.ArgumentParser()
     p.add_argument("--start", help="operating day start YYYY-MM-DD (overrides lag window)")
     p.add_argument("--end", help="operating day end YYYY-MM-DD")
+    p.add_argument("--rebuild", action="store_true",
+                   help="recompute the whole window, overwriting stored days")
     return p.parse_args(argv)
 
 
@@ -56,19 +58,22 @@ def main(argv=None) -> int:
     auth = ErcotAuth(config.require("ERCOT_USERNAME"), config.require("ERCOT_PASSWORD"))
     client = ErcotClient(auth, config.require("ERCOT_SUBSCRIPTION_KEY"))
 
-    # Incremental: process only operating days not already in history. The first
-    # run backfills the whole window; later runs add just the newly-posted days.
-    done = set()
-    hist = store.load_history()
-    if not hist.empty:
-        done = set(pd.to_datetime(hist["date"]).dt.date)
-    all_days = [d0 + timedelta(days=i) for i in range((d1 - d0).days + 1)]
-    missing = [d for d in all_days if d not in done]
-    if not missing:
-        log.info("Up to date through %s (%d operating days stored).", d1, len(done))
-        return 0
-    d0, d1 = missing[0], missing[-1]
-    log.info("Processing %d missing operating days: %s .. %s", len(missing), d0, d1)
+    # Incremental: process only operating days not already in history (skipped in
+    # --rebuild mode, which recomputes the whole window and overwrites via upsert).
+    if args.rebuild:
+        log.info("REBUILD: recomputing full window %s .. %s, ignoring stored days.", d0, d1)
+    else:
+        done = set()
+        hist = store.load_history()
+        if not hist.empty:
+            done = set(pd.to_datetime(hist["date"]).dt.date)
+        all_days = [d0 + timedelta(days=i) for i in range((d1 - d0).days + 1)]
+        missing = [d for d in all_days if d not in done]
+        if not missing:
+            log.info("Up to date through %s (%d operating days stored).", d1, len(done))
+            return 0
+        d0, d1 = missing[0], missing[-1]
+        log.info("Processing %d missing operating days: %s .. %s", len(missing), d0, d1)
 
     # Process one calendar month at a time. This bounds each price request and
     # disclosure batch (a full-year span would time out / exhaust memory), and
