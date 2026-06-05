@@ -32,38 +32,16 @@ log = logging.getLogger("backtest.products")
 DAM_SPP = "np4-190-cd/dam_stlmnt_pnt_prices"        # DAM Settlement Point Prices
 RTM_SPP = "np6-905-cd/spp_node_zone_hub"            # RTM 15-min SPP (node/zone/hub)
 # NP6-332-CD = Real-Time Clearing Prices for Capacity by SCED Interval (RT AS MCPC).
-# Endpoint sub-path confirmed by discover_rt_as_endpoint() on first run.
-RT_AS_MCPC = "np6-332-cd"
+# Long format: columns SCEDTimestamp, repeatHourFlag, ASType, MCPC.
+RT_AS_PRICE = "np6-332-cd/rt_clear_price_cap_sced"
 
 
-def discover_rt_as_endpoint(client) -> None:
-    """One-time probe of the confirmed NP6-332-CD row endpoint: capture the
-    date-filter parameter name, the column list, and a couple of sample rows."""
-    import json as _json
-    import requests
-    url = f"{BASE}/{RT_AS_MCPC}/rt_clear_price_cap_sced"
-    headers = client._auth.headers(client._key)
-    param_sets = [
-        {"SCEDTimestampFrom": "2026-04-02T00:00:00", "SCEDTimestampTo": "2026-04-02T00:30:00"},
-        {"SCEDTimeStampFrom": "2026-04-02T00:00:00", "SCEDTimeStampTo": "2026-04-02T00:30:00"},
-        {"deliveryDateFrom": "2026-04-02", "deliveryDateTo": "2026-04-02"},
-    ]
-    for p in param_sets:
-        p["size"] = 3
-        try:
-            client._throttle()
-            r = requests.get(url, headers=headers, params=p, timeout=60)
-            if r.status_code == 200:
-                b = r.json()
-                fields = [f.get("name") for f in b.get("fields", [])]
-                rows = b.get("data", [])
-                log.info("DISCOVER endpoint OK params=%s fields=%s", list(p)[:-1], fields)
-                log.info("DISCOVER sample rows=%s", _json.dumps(rows[:3])[:800])
-                return
-            log.info("DISCOVER endpoint params=%s status=%s body=%s",
-                     list(p)[:-1], r.status_code, r.text[:200])
-        except Exception as e:  # noqa
-            log.info("DISCOVER endpoint params=%s error %s", list(p)[:-1], e)
+def rt_as_prices(client: ErcotClient, d0: date, d1: date) -> pd.DataFrame:
+    """Real-time AS clearing prices (MCPC) per SCED interval per service."""
+    params = {"SCEDTimestampFrom": f"{d0.isoformat()}T00:00:00",
+              "SCEDTimestampTo": f"{d1.isoformat()}T23:59:59"}
+    return client.get_report(RT_AS_PRICE, params)
+
 
 # ---- 60-day disclosure archives (zipped CSV bundles) --------------------------
 DAM_DISCLOSURE = "NP3-966-ER"   # 60-Day DAM Disclosure Reports (awards)
@@ -148,7 +126,11 @@ AWARD_COLS = {"Delivery Date", "Hour Ending", "Resource Name",
               "RegUp Awarded", "RegUp MCPC", "RegDown Awarded", "RegDown MCPC",
               "RRSPFR Awarded", "RRSFFR Awarded", "RRSUFR Awarded", "RRS MCPC",
               "ECRSSD Awarded", "ECRS MCPC", "NonSpin Awarded", "NonSpin MCPC"}
-DISPATCH_COLS = {"SCED Time Stamp", "Resource Name", "Base Point"}
+DISPATCH_COLS = {"SCED Time Stamp", "Resource Name", "Base Point",
+                 # RT ancillary-service awards (MW) per SCED interval:
+                 "AS Awards REGUP", "AS Awards REGDN", "AS Awards ECRS",
+                 "AS Awards NSPIN", "AS Awards RRSPFR", "AS Awards RRSFFR",
+                 "AS Awards RRSUFR"}
 
 
 def _read_members(zbytes: bytes, fragment: str, usecols: set | None = None) -> pd.DataFrame:
