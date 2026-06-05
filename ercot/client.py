@@ -3,6 +3,10 @@
 The Public API ("public-reports") returns JSON with a `data` array of rows and
 a `fields` array describing columns, plus a `_meta` block with paging info.
 This client normalizes any product into a pandas DataFrame, following pages.
+
+NOTE ON PRODUCT IDS: the exact EMIL product paths are confirmed against the
+live catalog at https://apiexplorer.ercot.com once network access is open.
+Best-known paths are defined in products.py and are easy to adjust.
 """
 from __future__ import annotations
 
@@ -19,7 +23,7 @@ BASE = "https://api.ercot.com/api/public-reports"
 
 
 class ErcotClient:
-    def __init__(self, auth: ErcotAuth, subscription_key: str, timeout: int = 60,
+    def __init__(self, auth: ErcotAuth, subscription_key: str, timeout: int = 120,
                  min_interval: float = 2.2, max_retries: int = 8):
         self._auth = auth
         self._key = subscription_key
@@ -53,7 +57,14 @@ class ErcotClient:
         for attempt in range(self._max_retries):
             self._throttle()
             headers = self._auth.headers(self._key)
-            resp = requests.get(url, headers=headers, params=params, timeout=self._timeout)
+            try:
+                resp = requests.get(url, headers=headers, params=params,
+                                    timeout=self._timeout)
+            except requests.exceptions.RequestException as e:
+                # network hiccup / read timeout on a large page -> back off & retry
+                last_err = f"network: {type(e).__name__}"
+                time.sleep(2 ** attempt + 1)
+                continue
             if resp.status_code == 200:
                 return resp.json()
             if resp.status_code in (429, 500, 502, 503, 504):
