@@ -110,28 +110,31 @@ def _sumcols(df: pd.DataFrame, cols: list[str]) -> pd.Series:
     return s
 
 
-# Maps the five RT-priced AS services to their DA-award and RT-award columns.
-# RRS clears as one product in RT but is split PFR/FFR/UFR in the disclosures.
+# Maps each RT-priced AS service to its DA award column(s), DA MCPC column, and
+# RT award column(s). RRS clears as one product in RT but is split in disclosures.
 _AS_SERVICES = {
-    "REGUP": (["RegUp Awarded"], ["AS Awards REGUP"]),
-    "REGDN": (["RegDown Awarded"], ["AS Awards REGDN"]),
-    "RRS":   (["RRSPFR Awarded", "RRSFFR Awarded", "RRSUFR Awarded"],
-              ["AS Awards RRSPFR", "AS Awards RRSFFR", "AS Awards RRSUFR"]),
-    "ECRS":  (["ECRSSD Awarded"], ["AS Awards ECRS"]),
-    "NSPIN": (["NonSpin Awarded"], ["AS Awards NSPIN"]),
+    "REGUP": {"da": ["RegUp Awarded"], "mcpc": "RegUp MCPC", "rt": ["AS Awards REGUP"]},
+    "REGDN": {"da": ["RegDown Awarded"], "mcpc": "RegDown MCPC", "rt": ["AS Awards REGDN"]},
+    "RRS":   {"da": ["RRSPFR Awarded", "RRSFFR Awarded", "RRSUFR Awarded"],
+              "mcpc": "RRS MCPC",
+              "rt": ["AS Awards RRSPFR", "AS Awards RRSFFR", "AS Awards RRSUFR"]},
+    "ECRS":  {"da": ["ECRSSD Awarded"], "mcpc": "ECRS MCPC", "rt": ["AS Awards ECRS"]},
+    "NSPIN": {"da": ["NonSpin Awarded"], "mcpc": "NonSpin MCPC", "rt": ["AS Awards NSPIN"]},
 }
 
 
-def normalize_rt_as_revenue(da_raw: pd.DataFrame, sced_raw: pd.DataFrame,
-                            price_raw: pd.DataFrame, resmap: pd.DataFrame) -> pd.DataFrame:
-    """RT ancillary-service deviation revenue per resource per day.
+def normalize_as_revenue(da_raw: pd.DataFrame, sced_raw: pd.DataFrame,
+                         price_raw: pd.DataFrame, resmap: pd.DataFrame) -> pd.DataFrame:
+    """Ancillary-service revenue per resource per day, split DART vs RT:
 
-    Two-settlement offset: (RT_AS_award - DA_AS_award) * RT_AS_MCPC, summed over
-    services and hours. RT awards (per SCED interval) and RT MCPC (per SCED
-    interval, system-wide) are averaged to the hour; DA awards are hourly.
-    Returns [resource_name, date, rt_as_rev].
+      DART AS = DA_award * (DA_MCPC - RT_MCPC)   (day-ahead position MtM)
+      RT AS   = RT_award * RT_MCPC               (real-time AS sold)
+
+    summed over the five services and over hours. DA awards/MCPC are hourly;
+    RT awards (SCED) and RT MCPC (system-wide, per SCED interval) are averaged to
+    the hour. Returns [resource_name, date, dart_as, rt_as].
     """
-    cols = ["resource_name", "date", "rt_as_rev"]
+    cols = ["resource_name", "date", "dart_as", "rt_as"]
     if any(x is None or x.empty for x in (da_raw, sced_raw, price_raw)):
         return pd.DataFrame(columns=cols)
 
@@ -140,64 +143,40 @@ def normalize_rt_as_revenue(da_raw: pd.DataFrame, sced_raw: pd.DataFrame,
     pts = pd.to_datetime(p[_col(p, "SCEDTimestamp", "SCED Time Stamp")], errors="coerce")
     p["ts_hour"] = pts.dt.floor("h")
     p["ASType"] = p[_col(p, "ASType")].astype(str).str.upper()
-    p["mcpc"] = pd.to_numeric(p[_col(p, "MCPC")], errors="coerce")
-    price_hr = p.groupby(["ts_hour", "ASType"], as_index=False)["mcpc"].mean()
+    p["rt_mcpc"] = pd.to_numeric(p[_col(p, "MCPC")], errors="coerce")
+    price_hr = p.groupby(["ts_hour", "ASType"], as_index=False)["rt_mcpc"].mean()
 
-    # RT awards (SCED ESR) -> hourly mean per resource per service
+    # DA awards + DA MCPC (DAM ESR), hourly per resource per service
+    d = da_raw.rename(columns={_col(da_raw, "Resource Name"): "resource_name"}).copy()
+    d = _hour_ending_to_grid(d, _col(d, "Delivery Date"), _col(d, "Hour Ending"))
+    da = pd.concat([
+        d[["resource_name", "ts_hour"]].assign(
+            ASType=svc, da_mw=_sumcols(d, m["da"]), da_mcpc=_numcol(d, m["mcpc"]))
+        for svc, m in _AS_SERVICES.items()
+    ], ignore_index=True)
+    da = da.groupby(["resource_name", "ts_hour", "ASType"], as_index=False).agg(
+        da_mw=("da_mw", "sum"), da_mcpc=("da_mcpc", "mean"))
+
+    # RT awards (SCED ESR), hourly mean per resource per service
     s = sced_raw.rename(columns={_col(sced_raw, "Resource Name"): "resource_name"}).copy()
     sts = pd.to_datetime(s[_col(s, "SCED Time Stamp", "SCEDTimestamp")], errors="coerce")
     s["ts_hour"] = sts.dt.floor("h")
     rt = pd.concat([
-        s[["resource_name", "ts_hour"]].assign(ASType=svc, rt_mw=_sumcols(s, rtc))
-        for svc, (_, rtc) in _AS_SERVICES.items()
+        s[["resource_name", "ts_hour"]].assign(ASType=svc, rt_mw=_sumcols(s, m["rt"]))
+        for svc, m in _AS_SERVICES.items()
     ], ignore_index=True)
     rt = rt.groupby(["resource_name", "ts_hour", "ASType"], as_index=False)["rt_mw"].mean()
 
-    # DA awards (DAM ESR) -> hourly per resource per service
-    d = da_raw.rename(columns={_col(da_raw, "Resource Name"): "resource_name"}).copy()
-    d = _hour_ending_to_grid(d, _col(d, "Delivery Date"), _col(d, "Hour Ending"))
-    da = pd.concat([
-        d[["resource_name", "ts_hour"]].assign(ASType=svc, da_mw=_sumcols(d, dac))
-        for svc, (dac, _) in _AS_SERVICES.items()
-    ], ignore_index=True)
-    da = da.groupby(["resource_name", "ts_hour", "ASType"], as_index=False)["da_mw"].sum()
-
-    pos = rt.merge(da, on=["resource_name", "ts_hour", "ASType"], how="outer")
-    pos["rt_mw"] = pos["rt_mw"].fillna(0.0)
-    pos["da_mw"] = pos["da_mw"].fillna(0.0)
+    pos = da.merge(rt, on=["resource_name", "ts_hour", "ASType"], how="outer")
     pos = pos.merge(price_hr, on=["ts_hour", "ASType"], how="left")
-    pos["mcpc"] = pos["mcpc"].fillna(0.0)
-    pos["rt_as_rev"] = (pos["rt_mw"] - pos["da_mw"]) * pos["mcpc"]
+    for c in ("da_mw", "da_mcpc", "rt_mw", "rt_mcpc"):
+        pos[c] = pos[c].fillna(0.0)
+    pos["dart_as"] = pos["da_mw"] * (pos["da_mcpc"] - pos["rt_mcpc"])
+    pos["rt_as"] = pos["rt_mw"] * pos["rt_mcpc"]
     pos = pos.merge(resmap[["resource_name"]].drop_duplicates(),
                     on="resource_name", how="inner")
     pos["date"] = pd.to_datetime(pos["ts_hour"]).dt.date
-    return pos.groupby(["resource_name", "date"], as_index=False)["rt_as_rev"].sum()
-
-
-def normalize_da_as(raw: pd.DataFrame, resmap: pd.DataFrame) -> pd.DataFrame:
-    """DA ancillary-service revenue per resource per day from 60d_DAM_ESR_Data.
-
-    Revenue for each hour = sum over services of (awarded MW * MCPC $/MW):
-      RegUp, RegDown, RRS (PFR+FFR+UFR share one MCPC), ECRS, NonSpin.
-    Returns [resource_name, date, as_rev].
-    """
-    cols = ["resource_name", "date", "as_rev"]
-    if raw is None or raw.empty:
-        return pd.DataFrame(columns=cols)
-    res_col = _col(raw, "Resource Name", "ResourceName")
-    date_col = _col(raw, "Delivery Date", "DeliveryDate")
-    df = raw.rename(columns={res_col: "resource_name"}).copy()
-    rev = (_numcol(df, "RegUp Awarded") * _numcol(df, "RegUp MCPC")
-           + _numcol(df, "RegDown Awarded") * _numcol(df, "RegDown MCPC")
-           + (_numcol(df, "RRSPFR Awarded") + _numcol(df, "RRSFFR Awarded")
-              + _numcol(df, "RRSUFR Awarded")) * _numcol(df, "RRS MCPC")
-           + _numcol(df, "ECRSSD Awarded") * _numcol(df, "ECRS MCPC")
-           + _numcol(df, "NonSpin Awarded") * _numcol(df, "NonSpin MCPC"))
-    df["as_rev"] = rev
-    df["date"] = pd.to_datetime(df[date_col], errors="coerce").dt.date
-    df = df.merge(resmap[["resource_name"]].drop_duplicates(),
-                  on="resource_name", how="inner")
-    return df.groupby(["resource_name", "date"], as_index=False)["as_rev"].sum()
+    return pos.groupby(["resource_name", "date"], as_index=False)[["dart_as", "rt_as"]].sum()
 
 
 def normalize_rt_dispatch(raw: pd.DataFrame, batteries: pd.DataFrame) -> pd.DataFrame:
