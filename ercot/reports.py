@@ -50,10 +50,13 @@ def _duration_groups(monthly: pd.DataFrame) -> list[dict]:
     if "duration_class" not in m.columns:
         m["duration_class"] = "1hr"
     m["group"] = m["owner"].str.title() + " " + m["duration_class"]
+    if "as_rev" not in m.columns:
+        m["as_rev"] = 0.0
     g = m.groupby(["period", "group"], as_index=False).agg(
         avg_rev_per_mw=("total_rev_per_mw", "mean"),
         da_rev=("da_rev", "sum"),
         rt_rev=("rt_rev", "sum"),
+        as_rev=("as_rev", "sum"),
         n_units=("resource_name", "nunique"),
     )
     return json.loads(g.to_json(orient="records"))
