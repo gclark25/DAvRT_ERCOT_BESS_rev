@@ -1,86 +1,118 @@
-"""Generate Excel rollups + a JSON feed for the dashboard."""
+"""Daily orchestrator: fetch -> normalize -> settle -> store -> report."""
 from __future__ import annotations
 
-import json
-from pathlib import Path
+import argparse
+import logging
+import os
+import sys
+from datetime import date, timedelta
 
 import pandas as pd
 
-from .config import REPORTS_DIR, DATA_DIR, DOCS_DIR
-from . import calc
+from ercot.auth import ErcotAuth
+from ercot.client import ErcotClient
+from ercot import config, products, normalize, calc, store, reports
+from ercot.batteries import load_batteries, settlement_points
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+log = logging.getLogger("backtest")
+
+START_DATE = date(2026, 1, 1)
+DISCLOSURE_LAG = 64  # calendar days; safe margin past the 60-day posting
 
 
-def _rank(df: pd.DataFrame, value: str) -> pd.DataFrame:
-    df = df.sort_values(value, ascending=False).reset_index(drop=True)
-    df.insert(0, "rank", df.index + 1)
-    return df
+def parse_args(argv=None):
+    p = argparse.ArgumentParser()
+    p.add_argument("--start", help="operating day start YYYY-MM-DD (overrides lag window)")
+    p.add_argument("--end", help="operating day end YYYY-MM-DD")
+    p.add_argument("--rebuild", action="store_true",
+                   help="recompute the whole window, overwriting stored days")
+    return p.parse_args(argv)
 
 
-def write_excel(history: pd.DataFrame) -> Path:
-    """Write a single workbook with daily, monthly, yearly sheets + peer ranks."""
-    out = REPORTS_DIR / "da_vs_rt_backtest.xlsx"
-    monthly = calc.rollup(history, "month")
-    yearly = calc.rollup(history, "year")
+def main(argv=None) -> int:
+    args = parse_args(argv)
+    today = date.today()
+    d0 = date.fromisoformat(args.start) if args.start else START_DATE
+    d1 = date.fromisoformat(args.end) if args.end else today - timedelta(days=DISCLOSURE_LAG)
+    d0 = max(d0, START_DATE)
+    log.info("Target window %s .. %s", d0, d1)
+    if d1 < d0:
+        log.info("Window empty - nothing to process."); return 0
 
-    with pd.ExcelWriter(out, engine="openpyxl") as xl:
-        history.sort_values(["date", "total_rev"], ascending=[True, False]).to_excel(
-            xl, sheet_name="Daily", index=False
-        )
-        _rank(monthly, "total_rev_per_mw").to_excel(xl, sheet_name="Monthly", index=False)
-        _rank(yearly, "total_rev_per_mw").to_excel(xl, sheet_name="Yearly", index=False)
+    batteries = load_batteries()
+    sps = settlement_points(batteries)
+    log.info("Loaded %d batteries (%d settlement points)", len(batteries), len(sps))
 
-        # HEN vs peer summary (latest year, avg $/MW by owner)
-        if not yearly.empty:
-            summary = (
-                yearly.groupby("owner", as_index=False)
-                .agg(avg_total_rev_per_mw=("total_rev_per_mw", "mean"),
-                     dart_energy=("dart_energy", "sum"),
-                     rt_energy=("rt_energy", "sum"),
-                     dart_as=("dart_as", "sum"),
-                     rt_as=("rt_as", "sum"))
-            )
-            summary.to_excel(xl, sheet_name="HEN_vs_Peers", index=False)
-    return out
+    auth = ErcotAuth(config.require("ERCOT_USERNAME"), config.require("ERCOT_PASSWORD"))
+    client = ErcotClient(auth, config.require("ERCOT_SUBSCRIPTION_KEY"))
+
+    if args.rebuild:
+        log.info("REBUILD: recomputing full window %s .. %s, ignoring stored days.", d0, d1)
+    else:
+        done = set()
+        hist = store.load_history()
+        if not hist.empty:
+            done = set(pd.to_datetime(hist["date"]).dt.date)
+        all_days = [d0 + timedelta(days=i) for i in range((d1 - d0).days + 1)]
+        missing = [d for d in all_days if d not in done]
+        if not missing:
+            log.info("Up to date through %s (%d operating days stored).", d1, len(done))
+            return 0
+        d0, d1 = missing[0], missing[-1]
+        log.info("Processing %d missing operating days: %s .. %s", len(missing), d0, d1)
+
+    total = 0
+    for c0, c1 in _month_chunks(d0, d1):
+        log.info("=== chunk %s .. %s ===", c0, c1)
+        da_px_raw = products.dam_prices(client, c0, c1, sps)
+        rt_px_raw = products.rtm_prices(client, c0, c1, sps)
+        da_aw_raw = products.dam_awards(client, c0, c1)
+        rt_disp_raw = products.sced_dispatch(client, c0, c1)
+        rt_as_price_raw = products.rt_as_prices(client, c0, c1)
+
+        resmap = normalize.esr_resource_map(da_aw_raw, batteries)
+        log.info("  matched %d ESR resources (%d HEN)", len(resmap),
+                 int((resmap.get("owner") == "HEN").sum()) if len(resmap) else 0)
+
+        prices = normalize.build_prices(normalize.normalize_da_prices(da_px_raw),
+                                        normalize.normalize_rt_prices(rt_px_raw))
+        positions = normalize.build_positions(
+            normalize.normalize_da_awards(da_aw_raw, resmap),
+            normalize.normalize_rt_dispatch(rt_disp_raw, resmap))
+        daily = calc.daily_by_battery(calc.settle(positions, prices), resmap)
+
+        as_df = normalize.normalize_as_revenue(da_aw_raw, rt_disp_raw,
+                                               rt_as_price_raw, resmap)
+        daily = daily.merge(as_df, on=["resource_name", "date"], how="left")
+        for col in ("dart_as", "rt_as"):
+            daily[col] = daily[col].fillna(0.0)
+        daily["total_rev"] = (daily["dart_energy"] + daily["rt_energy"]
+                              + daily["dart_as"] + daily["rt_as"])
+        daily["total_rev_per_mw"] = daily["total_rev"] / daily["nameplate_mw"]
+        store.upsert(daily)
+        total += len(daily)
+        log.info("  chunk added %d battery-day rows", len(daily))
+
+    history = store.load_history()
+    xlsx = reports.write_excel(history)
+    feed = reports.write_dashboard_feed(history)
+    log.info("Done: +%d rows this run; history now %d rows. Wrote %s, %s",
+             total, len(history), xlsx, feed)
+    return 0
 
 
-def _duration_groups(monthly: pd.DataFrame) -> list[dict]:
-    """Average $/MW per month by group = '<owner> <duration_class>'
-    (e.g. 'HEN 1hr', 'PEER 2hr'), the four series the dashboard plots."""
-    if monthly.empty:
-        return []
-    m = monthly.copy()
-    if "duration_class" not in m.columns:
-        m["duration_class"] = "1hr"
-    m["group"] = m["owner"].str.title() + " " + m["duration_class"]
-    for c in ("dart_energy", "rt_energy", "dart_as", "rt_as"):
-        if c not in m.columns:
-            m[c] = 0.0
-    g = m.groupby(["period", "group"], as_index=False).agg(
-        avg_rev_per_mw=("total_rev_per_mw", "mean"),
-        dart_energy=("dart_energy", "sum"),
-        rt_energy=("rt_energy", "sum"),
-        dart_as=("dart_as", "sum"),
-        rt_as=("rt_as", "sum"),
-        n_units=("resource_name", "nunique"),
-    )
-    return json.loads(g.to_json(orient="records"))
+def _month_chunks(d0: date, d1: date):
+    """Yield (start, end) date pairs, each within a single calendar month."""
+    cur = d0
+    while cur <= d1:
+        if cur.month == 12:
+            month_end = date(cur.year, 12, 31)
+        else:
+            month_end = date(cur.year, cur.month + 1, 1) - timedelta(days=1)
+        yield cur, min(month_end, d1)
+        cur = min(month_end, d1) + timedelta(days=1)
 
 
-def write_dashboard_feed(history: pd.DataFrame) -> Path:
-    """Compact JSON the static dashboard reads (committed to repo / Pages)."""
-    monthly = calc.rollup(history, "month")
-    latest = sorted(monthly["period"].unique())[-1] if not monthly.empty else None
-    leaderboard = (monthly[monthly["period"] == latest]
-                   if latest else monthly.head(0))
-    payload = {
-        "updated": latest,
-        "groups_monthly": _duration_groups(monthly),
-        "leaderboard": json.loads(
-            leaderboard.sort_values("total_rev_per_mw", ascending=False)
-            .to_json(orient="records")),
-    }
-    text = json.dumps(payload)
-    out = DOCS_DIR / "dashboard.json"   # served by GitHub Pages
-    out.write_text(text)
-    (DATA_DIR / "dashboard.json").write_text(text)  # also keep with data
-    return out
+if __name__ == "__main__":
+    sys.exit(main())
