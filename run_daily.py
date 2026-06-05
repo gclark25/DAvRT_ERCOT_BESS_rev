@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import os
 import sys
 from datetime import date, timedelta
 
@@ -52,6 +53,14 @@ def main(argv=None) -> int:
     sps = settlement_points(batteries)
     log.info("Loaded %d batteries (%d settlement points)", len(batteries), len(sps))
 
+    auth = ErcotAuth(config.require("ERCOT_USERNAME"), config.require("ERCOT_PASSWORD"))
+    client = ErcotClient(auth, config.require("ERCOT_SUBSCRIPTION_KEY"))
+
+    # One-time discovery of the RT AS clearing-price endpoint (remove once known).
+    if os.environ.get("DISCOVER_AS"):
+        products.discover_rt_as_endpoint(client)
+        return 0
+
     # Incremental: process only operating days not already in history. The first
     # run backfills the whole window; later runs add just the newly-posted days.
     done = set()
@@ -65,9 +74,6 @@ def main(argv=None) -> int:
         return 0
     d0, d1 = missing[0], missing[-1]
     log.info("Processing %d missing operating days: %s .. %s", len(missing), d0, d1)
-
-    auth = ErcotAuth(config.require("ERCOT_USERNAME"), config.require("ERCOT_PASSWORD"))
-    client = ErcotClient(auth, config.require("ERCOT_SUBSCRIPTION_KEY"))
 
     # Process one calendar month at a time. This bounds each price request and
     # disclosure batch (a full-year span would time out / exhaust memory), and
@@ -90,6 +96,12 @@ def main(argv=None) -> int:
             normalize.normalize_da_awards(da_aw_raw, resmap),
             normalize.normalize_rt_dispatch(rt_disp_raw, resmap))
         daily = calc.daily_by_battery(calc.settle(positions, prices), resmap)
+        # add DA ancillary-service revenue (RegUp/RegDown/RRS/ECRS/NonSpin)
+        as_daily = normalize.normalize_da_as(da_aw_raw, resmap)
+        daily = daily.merge(as_daily, on=["resource_name", "date"], how="left")
+        daily["as_rev"] = daily["as_rev"].fillna(0.0)
+        daily["total_rev"] = daily["da_rev"] + daily["rt_rev"] + daily["as_rev"]
+        daily["total_rev_per_mw"] = daily["total_rev"] / daily["nameplate_mw"]
         store.upsert(daily)
         total += len(daily)
         log.info("  chunk added %d battery-day rows", len(daily))
