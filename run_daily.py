@@ -103,6 +103,19 @@ def main(argv=None) -> int:
         da_as = normalize.normalize_da_as(da_aw_raw, resmap)
         rt_as = normalize.normalize_rt_as_revenue(da_aw_raw, rt_disp_raw,
                                                   rt_as_price_raw, resmap)
+        # --- AS diagnostics (remove once confirmed) ---
+        def _rawsum(df, col):
+            return (float(pd.to_numeric(df[col], errors="coerce").fillna(0).sum())
+                    if col in df.columns else "MISSING")
+        log.info("  ASDIAG da_as_sum=%s rt_as_sum=%s | raw 'RegUp Awarded'=%s "
+                 "'AS Awards REGUP'=%s | priceRows=%d ASTypes=%s",
+                 round(float(da_as["as_rev"].sum()), 0) if len(da_as) else "EMPTY",
+                 round(float(rt_as["rt_as_rev"].sum()), 0) if len(rt_as) else "EMPTY",
+                 _rawsum(da_aw_raw, "RegUp Awarded"),
+                 _rawsum(rt_disp_raw, "AS Awards REGUP"),
+                 len(rt_as_price_raw),
+                 sorted(rt_as_price_raw["ASType"].astype(str).unique())[:7]
+                 if "ASType" in rt_as_price_raw.columns else "noASTypeCol")
         daily = daily.merge(da_as, on=["resource_name", "date"], how="left")
         daily = daily.merge(rt_as, on=["resource_name", "date"], how="left")
         daily["as_rev"] = daily["as_rev"].fillna(0.0) + daily["rt_as_rev"].fillna(0.0)
