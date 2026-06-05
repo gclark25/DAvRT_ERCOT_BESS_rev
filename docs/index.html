@@ -33,8 +33,15 @@
 </header>
 <div class="wrap">
   <div class="card full"><h2>Average $/MW by group, monthly</h2><div class="chartbox tall"><canvas id="line"></canvas></div></div>
-  <div class="card"><h2>HEN — YTD revenue by stream ($)</h2><div class="chartbox"><canvas id="henBar"></canvas></div></div>
-  <div class="card"><h2>Peers — YTD revenue by stream ($)</h2><div class="chartbox"><canvas id="peerBar"></canvas></div></div>
+
+  <div class="card"><h2>HEN — YTD $/MW by stream</h2><div class="chartbox"><canvas id="henBar"></canvas></div></div>
+  <div class="card"><h2>Peers — YTD $/MW by stream</h2><div class="chartbox"><canvas id="peerBar"></canvas></div></div>
+
+  <div class="card"><h2>HEN 1hr — revenue mix</h2><div class="chartbox"><canvas id="pieHen1"></canvas></div></div>
+  <div class="card"><h2>Peers 1hr — revenue mix</h2><div class="chartbox"><canvas id="piePeer1"></canvas></div></div>
+  <div class="card"><h2>HEN 2hr — revenue mix</h2><div class="chartbox"><canvas id="pieHen2"></canvas></div></div>
+  <div class="card"><h2>Peers 2hr — revenue mix</h2><div class="chartbox"><canvas id="piePeer2"></canvas></div></div>
+
   <div class="card full"><h2>Latest-month leaderboard ($/MW)</h2><div class="scroll"><div id="board"></div></div></div>
 </div>
 <script>
@@ -46,7 +53,6 @@ const STYLE = {
   "Peer 2hr": {c:"#ffb784", dash:[6,4]},
 };
 const label = g => g.replace("Hen","HEN").replace("Peer","Peers");
-// Four revenue streams.
 const STREAMS = ["dart_energy", "rt_energy", "dart_as", "rt_as"];
 const STREAM_LABELS = ["DART Energy", "RT Energy", "DART AS", "RT AS"];
 const STREAM_COLORS = ["#4f9dff", "#ff8c42", "#58c27d", "#c678dd"];
@@ -54,6 +60,7 @@ const NOASPECT = {responsive:true, maintainAspectRatio:false};
 
 fetch("dashboard.json").then(r=>r.json()).then(d=>{
   const gm = d.groups_monthly || [];
+  const mw = d.fleet_mw || {};
   document.getElementById("updated").textContent =
     d.updated ? ("through "+d.updated) : "no data yet";
   if(!gm.length){ return; }
@@ -71,26 +78,43 @@ fetch("dashboard.json").then(r=>r.json()).then(d=>{
     options:{...NOASPECT, plugins:{legend:{labels:{color:"#8b98a5",boxWidth:14}}},
       scales:{x:{ticks:{color:"#8b98a5"}},y:{ticks:{color:"#8b98a5",callback:fmt}}}}});
 
-  // Sum the four streams per fleet (across both durations)
-  const fleet = {Hen:{}, Peer:{}};
-  STREAMS.forEach(s=>{ fleet.Hen[s]=0; fleet.Peer[s]=0; });
-  gm.forEach(r=>{ const f=r.group.startsWith("Hen")?"Hen":"Peer";
-    STREAMS.forEach(s=> fleet[f][s]+=(r[s]||0)); });
+  // YTD stream totals ($) per group
+  const gsum = {};
+  groups.forEach(g=>{ gsum[g]={dart_energy:0,rt_energy:0,dart_as:0,rt_as:0}; });
+  gm.forEach(r=>STREAMS.forEach(s=> gsum[r.group][s]+=(r[s]||0)));
 
-  // Bar chart (not pie) so negative DART legs render below zero.
-  function bar(canvas, f){
-    const data = STREAMS.map(s=>fleet[f][s]);
-    const tot = data.reduce((x,y)=>x+y,0);
+  // $/MW bar for a fleet (sum its duration groups' $ and MW)
+  function bar(canvas, prefix){
+    const gs = groups.filter(g=>g.startsWith(prefix));
+    const tot$ = STREAMS.map(s=>gs.reduce((a,g)=>a+gsum[g][s],0));
+    const totMW = gs.reduce((a,g)=>a+(mw[g]||0),0) || 1;
+    const perMW = tot$.map(v=>v/totMW);
     new Chart(canvas,{type:"bar",
-      data:{labels:STREAM_LABELS, datasets:[{data, backgroundColor:STREAM_COLORS}]},
+      data:{labels:STREAM_LABELS, datasets:[{data:perMW, backgroundColor:STREAM_COLORS}]},
       options:{...NOASPECT, plugins:{legend:{display:false},
-        title:{display:true,text:"Total "+fmt(tot),color:"#8b98a5",font:{size:12}},
-        tooltip:{callbacks:{label:c=>fmt(c.raw)}}},
+        title:{display:true,text:`${totMW.toLocaleString()} MW · total ${fmt(perMW.reduce((a,b)=>a+b,0))}/MW`,color:"#8b98a5",font:{size:12}},
+        tooltip:{callbacks:{label:c=>fmt(c.raw)+"/MW"}}},
         scales:{x:{ticks:{color:"#8b98a5"}},
           y:{ticks:{color:"#8b98a5",callback:fmt},grid:{color:c=>c.tick.value===0?"#5a6b7a":"#283039"}}}}});
   }
   bar(henBar, "Hen");
   bar(peerBar, "Peer");
+
+  // revenue-mix pie for one group (DART legs are ~positive at this aggregate)
+  function pie(canvas, group){
+    const g = gsum[group] || {dart_energy:0,rt_energy:0,dart_as:0,rt_as:0};
+    const data = STREAMS.map(s=>g[s]);
+    const total = data.reduce((a,b)=>a+b,0) || 1;
+    new Chart(canvas,{type:"pie",
+      data:{labels:STREAM_LABELS, datasets:[{data:data.map(v=>Math.max(v,0)), backgroundColor:STREAM_COLORS}]},
+      options:{...NOASPECT, plugins:{legend:{position:"right",labels:{color:"#8b98a5",boxWidth:12,font:{size:11}}},
+        title:{display:true,text:"Total "+fmt(total),color:"#8b98a5",font:{size:12}},
+        tooltip:{callbacks:{label:(c)=>`${c.label}: ${fmt(data[c.dataIndex])} (${(data[c.dataIndex]/total*100).toFixed(0)}%)`}}}}});
+  }
+  pie(pieHen1, "Hen 1hr");
+  pie(piePeer1, "Peer 1hr");
+  pie(pieHen2, "Hen 2hr");
+  pie(piePeer2, "Peer 2hr");
 
   const rows = d.leaderboard || [];
   let html="<table><tr><th>#</th><th>Battery</th><th>Owner</th><th>Dur</th><th>$/MW</th>"
