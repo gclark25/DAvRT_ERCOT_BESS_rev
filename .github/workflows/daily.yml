@@ -12,6 +12,10 @@ on:
       end:
         description: "Operating day end (YYYY-MM-DD), optional"
         required: false
+      discover:
+        description: "Set to 'true' to probe the RT AS price endpoint and exit"
+        required: false
+        default: ""
 
 permissions:
   contents: write           # allow committing updated data/reports back
@@ -34,6 +38,7 @@ jobs:
           ERCOT_USERNAME: ${{ secrets.ERCOT_USERNAME }}
           ERCOT_PASSWORD: ${{ secrets.ERCOT_PASSWORD }}
           ERCOT_SUBSCRIPTION_KEY: ${{ secrets.ERCOT_SUBSCRIPTION_KEY }}
+          DISCOVER_AS: ${{ inputs.discover }}
         run: |
           if [ -n "${{ inputs.start }}" ] && [ -n "${{ inputs.end }}" ]; then
             python run_daily.py --start "${{ inputs.start }}" --end "${{ inputs.end }}"
