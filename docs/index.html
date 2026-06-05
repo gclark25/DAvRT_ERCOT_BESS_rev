@@ -30,13 +30,12 @@
 </header>
 <div class="wrap">
   <div class="card full"><h2>Average $/MW by group, monthly</h2><canvas id="line" height="90"></canvas></div>
-  <div class="card"><h2>Latest month — avg $/MW by group</h2><canvas id="bar" height="170"></canvas></div>
-  <div class="card"><h2>Latest month — HEN DA vs RT split ($)</h2><canvas id="split" height="170"></canvas></div>
+  <div class="card"><h2>HEN — YTD revenue: DA vs RT by duration</h2><canvas id="henPie" height="200"></canvas></div>
+  <div class="card"><h2>Peers — YTD revenue: DA vs RT by duration</h2><canvas id="peerPie" height="200"></canvas></div>
   <div class="card full"><h2>Latest-month leaderboard ($/MW)</h2><div id="board"></div></div>
 </div>
 <script>
 const fmt = n => (n==null||isNaN(n)) ? "—" : "$"+Number(n).toLocaleString(undefined,{maximumFractionDigits:0});
-// Group colors: HEN = blues, Peers = oranges; 1hr solid, 2hr dashed.
 const STYLE = {
   "Hen 1hr":  {c:"#4f9dff", dash:[]},
   "Hen 2hr":  {c:"#7fc4ff", dash:[6,4]},
@@ -44,6 +43,9 @@ const STYLE = {
   "Peer 2hr": {c:"#ffb784", dash:[6,4]},
 };
 const label = g => g.replace("Hen","HEN").replace("Peer","Peers");
+// Pie slice colors: DA = blues, RT = oranges; 1hr bright, 2hr darker.
+const PIE_COLORS = ["#4f9dff", "#ff8c42", "#2f6fcc", "#cc6a2f"];
+const PIE_LABELS = ["1hr DA", "1hr RT", "2hr DA", "2hr RT"];
 
 fetch("dashboard.json").then(r=>r.json()).then(d=>{
   const gm = d.groups_monthly || [];
@@ -53,35 +55,36 @@ fetch("dashboard.json").then(r=>r.json()).then(d=>{
 
   const periods = [...new Set(gm.map(r=>r.period))].sort();
   const groups  = [...new Set(gm.map(r=>r.group))].sort();
-  const val = (p,g) => { const r = gm.find(x=>x.period===p && x.group===g); return r?r.avg_rev_per_mw:null; };
+  const valMw = (p,g) => { const r=gm.find(x=>x.period===p&&x.group===g); return r?r.avg_rev_per_mw:null; };
 
-  // Monthly line, one series per group
+  // Monthly line — avg $/MW per group
   new Chart(line,{type:"line",
     data:{labels:periods, datasets:groups.map(g=>({
-      label:label(g), data:periods.map(p=>val(p,g)),
+      label:label(g), data:periods.map(p=>valMw(p,g)),
       borderColor:(STYLE[g]||{}).c||"#aaa", borderDash:(STYLE[g]||{}).dash||[],
       borderWidth:2, tension:.25, pointRadius:2,
     }))},
     options:{plugins:{legend:{labels:{color:"#8b98a5",boxWidth:14}}},
       scales:{x:{ticks:{color:"#8b98a5"}},y:{ticks:{color:"#8b98a5",callback:fmt}}}}});
 
-  // Latest-month bar by group
-  const last = periods[periods.length-1];
-  const bars = groups.map(g=>({g, v:val(last,g)})).filter(x=>x.v!=null);
-  new Chart(bar,{type:"bar",
-    data:{labels:bars.map(b=>label(b.g)),
-      datasets:[{data:bars.map(b=>b.v), backgroundColor:bars.map(b=>(STYLE[b.g]||{}).c||"#aaa")}]},
-    options:{plugins:{legend:{display:false}},
-      scales:{x:{ticks:{color:"#8b98a5"}},y:{ticks:{color:"#8b98a5",callback:fmt}}}}});
+  // YTD DA/RT totals per group (sum across all months)
+  const sums = {};
+  gm.forEach(r=>{ const s=sums[r.group]||(sums[r.group]={da:0,rt:0});
+    s.da+=r.da_rev||0; s.rt+=r.rt_rev||0; });
 
-  // HEN DA vs RT split (latest month)
-  const hen = gm.filter(r=>r.period===last && r.group.startsWith("Hen"));
-  const da = hen.reduce((a,r)=>a+(r.da_rev||0),0), rt = hen.reduce((a,r)=>a+(r.rt_rev||0),0);
-  new Chart(split,{type:"doughnut",
-    data:{labels:["DA revenue","RT (deviation)"],datasets:[{data:[da,rt],backgroundColor:["#4f9dff","#ff8c42"]}]},
-    options:{plugins:{legend:{labels:{color:"#8b98a5"}}}}});
+  function pie(canvas, prefix){
+    const a = sums[prefix+" 1hr"]||{da:0,rt:0}, b = sums[prefix+" 2hr"]||{da:0,rt:0};
+    const data = [a.da, a.rt, b.da, b.rt];
+    const total = data.reduce((x,y)=>x+y,0) || 1;
+    new Chart(canvas,{type:"pie",
+      data:{labels:PIE_LABELS, datasets:[{data, backgroundColor:PIE_COLORS}]},
+      options:{plugins:{legend:{position:"right",labels:{color:"#8b98a5",boxWidth:12}},
+        tooltip:{callbacks:{label:c=>`${c.label}: ${fmt(c.raw)} (${(c.raw/total*100).toFixed(0)}%)`}}}}});
+  }
+  pie(henPie, "Hen");
+  pie(peerPie, "Peer");
 
-  // Leaderboard
+  // Leaderboard (latest month)
   const rows = d.leaderboard || [];
   let html="<table><tr><th>#</th><th>Battery</th><th>Owner</th><th>Dur</th><th>$/MW</th><th>DA $</th><th>RT $</th><th>Total $</th></tr>";
   rows.forEach((r,i)=>{ const hen=r.owner==="HEN";
