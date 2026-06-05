@@ -31,6 +31,37 @@ log = logging.getLogger("backtest.products")
 # ---- Row-based price products -------------------------------------------------
 DAM_SPP = "np4-190-cd/dam_stlmnt_pnt_prices"        # DAM Settlement Point Prices
 RTM_SPP = "np6-905-cd/spp_node_zone_hub"            # RTM 15-min SPP (node/zone/hub)
+# NP6-332-CD = Real-Time Clearing Prices for Capacity by SCED Interval (RT AS MCPC).
+# Endpoint sub-path confirmed by discover_rt_as_endpoint() on first run.
+RT_AS_MCPC = "np6-332-cd"
+
+
+def discover_rt_as_endpoint(client) -> None:
+    """One-time probe: find the NP6-332-CD row endpoint + its columns.
+    Logs the product index (which lists endpoint handles) and tries the row API."""
+    import requests
+    base_url = f"{BASE}/{RT_AS_MCPC}"
+    headers = client._auth.headers(client._key)
+    # 1) product index — often lists the available report endpoint handle(s)
+    try:
+        client._throttle()
+        r = requests.get(base_url, headers=headers, params={"size": 1}, timeout=60)
+        log.info("DISCOVER %s status=%s body[:700]=%s", base_url, r.status_code, r.text[:700])
+    except Exception as e:  # noqa
+        log.info("DISCOVER %s error %s", base_url, e)
+    # 2) a few plausible row endpoints
+    for suf in ("rtm_clearing_prices_capacity", "rt_clearing_prices_capacity",
+                "rtm_as_clearing_prices", "as_clearing_prices_sced",
+                "rtm_clearing_prices"):
+        url = f"{base_url}/{suf}"
+        try:
+            client._throttle()
+            r = requests.get(url, headers=headers, params={"size": 1}, timeout=60)
+            note = r.text[:300] if r.status_code != 200 else (
+                "FIELDS=" + str([f.get("name") for f in r.json().get("fields", [])]))
+            log.info("DISCOVER %s status=%s %s", suf, r.status_code, note)
+        except Exception as e:  # noqa
+            log.info("DISCOVER %s error %s", suf, e)
 
 # ---- 60-day disclosure archives (zipped CSV bundles) --------------------------
 DAM_DISCLOSURE = "NP3-966-ER"   # 60-Day DAM Disclosure Reports (awards)
@@ -110,7 +141,11 @@ def _download_zip(client: ErcotClient, emil: str, doc_id) -> bytes:
 # Only these columns are needed downstream; the ESR SCED file has ~190 columns,
 # so restricting the parse keeps memory bounded over a full-year backfill.
 AWARD_COLS = {"Delivery Date", "Hour Ending", "Resource Name",
-              "Awarded Quantity", "Settlement Point Name"}
+              "Awarded Quantity", "Settlement Point Name",
+              # DA ancillary-service awards (MW) and their clearing prices (MCPC):
+              "RegUp Awarded", "RegUp MCPC", "RegDown Awarded", "RegDown MCPC",
+              "RRSPFR Awarded", "RRSFFR Awarded", "RRSUFR Awarded", "RRS MCPC",
+              "ECRSSD Awarded", "ECRS MCPC", "NonSpin Awarded", "NonSpin MCPC"}
 DISPATCH_COLS = {"SCED Time Stamp", "Resource Name", "Base Point"}
 
 
