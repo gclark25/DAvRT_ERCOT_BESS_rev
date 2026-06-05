@@ -37,31 +37,49 @@ RT_AS_MCPC = "np6-332-cd"
 
 
 def discover_rt_as_endpoint(client) -> None:
-    """One-time probe: find the NP6-332-CD row endpoint + its columns.
-    Logs the product index (which lists endpoint handles) and tries the row API."""
+    """One-time probe: how to pull NP6-332-CD (row endpoint vs archive files)."""
+    import json as _json
     import requests
     base_url = f"{BASE}/{RT_AS_MCPC}"
     headers = client._auth.headers(client._key)
-    # 1) product index — often lists the available report endpoint handle(s)
+
+    # 1) full product metadata (look for an endpoint handle / links)
     try:
         client._throttle()
         r = requests.get(base_url, headers=headers, params={"size": 1}, timeout=60)
-        log.info("DISCOVER %s status=%s body[:700]=%s", base_url, r.status_code, r.text[:700])
+        log.info("DISCOVER meta status=%s body=%s", r.status_code, r.text[:2500])
     except Exception as e:  # noqa
-        log.info("DISCOVER %s error %s", base_url, e)
-    # 2) a few plausible row endpoints
-    for suf in ("rtm_clearing_prices_capacity", "rt_clearing_prices_capacity",
-                "rtm_as_clearing_prices", "as_clearing_prices_sced",
-                "rtm_clearing_prices"):
-        url = f"{base_url}/{suf}"
-        try:
-            client._throttle()
-            r = requests.get(url, headers=headers, params={"size": 1}, timeout=60)
-            note = r.text[:300] if r.status_code != 200 else (
-                "FIELDS=" + str([f.get("name") for f in r.json().get("fields", [])]))
-            log.info("DISCOVER %s status=%s %s", suf, r.status_code, note)
-        except Exception as e:  # noqa
-            log.info("DISCOVER %s error %s", suf, e)
+        log.info("DISCOVER meta error %s", e)
+
+    # 2) does the EMIL root itself accept date params and return rows?
+    try:
+        client._throttle()
+        r = requests.get(base_url, headers=headers,
+                         params={"SCEDTimestampFrom": "2026-02-02T00:00:00",
+                                 "SCEDTimestampTo": "2026-02-02T01:00:00", "size": 2},
+                         timeout=60)
+        body = r.json() if r.status_code == 200 else r.text[:200]
+        keys = list(body.keys()) if isinstance(body, dict) else body
+        fields = [f.get("name") for f in body.get("fields", [])] if isinstance(body, dict) else None
+        log.info("DISCOVER root+params status=%s keys=%s fields=%s", r.status_code, keys, fields)
+    except Exception as e:  # noqa
+        log.info("DISCOVER root+params error %s", e)
+
+    # 3) archive listing for one recent day — how many files per day, and naming
+    try:
+        client._throttle()
+        r = requests.get(f"{BASE}/archive/{RT_AS_MCPC}", headers=headers,
+                         params={"postDatetimeFrom": "2026-04-02T00:00:00",
+                                 "postDatetimeTo": "2026-04-02T02:00:00", "size": 5},
+                         timeout=60)
+        if r.status_code == 200:
+            b = r.json(); docs = b.get("archives") or b.get("data") or []
+            log.info("DISCOVER archive status=200 count(2h window)=%s sample=%s",
+                     len(docs), _json.dumps(docs[:2])[:600])
+        else:
+            log.info("DISCOVER archive status=%s body=%s", r.status_code, r.text[:200])
+    except Exception as e:  # noqa
+        log.info("DISCOVER archive error %s", e)
 
 # ---- 60-day disclosure archives (zipped CSV bundles) --------------------------
 DAM_DISCLOSURE = "NP3-966-ER"   # 60-Day DAM Disclosure Reports (awards)
