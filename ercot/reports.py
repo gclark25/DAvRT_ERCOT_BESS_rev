@@ -66,6 +66,16 @@ def _duration_groups(monthly: pd.DataFrame) -> list[dict]:
     return json.loads(g.to_json(orient="records"))
 
 
+def _fleet_mw(history: pd.DataFrame) -> dict:
+    """Total nameplate MW per group ('<Owner> <duration>'), counting each
+    battery once, so the dashboard can express stream revenue as $/MW."""
+    if history.empty or "duration_class" not in history.columns:
+        return {}
+    b = history.drop_duplicates("resource_name").copy()
+    b["group"] = b["owner"].str.title() + " " + b["duration_class"]
+    return b.groupby("group")["nameplate_mw"].sum().round(1).to_dict()
+
+
 def write_dashboard_feed(history: pd.DataFrame) -> Path:
     """Compact JSON the static dashboard reads (committed to repo / Pages)."""
     monthly = calc.rollup(history, "month")
@@ -74,6 +84,7 @@ def write_dashboard_feed(history: pd.DataFrame) -> Path:
                    if latest else monthly.head(0))
     payload = {
         "updated": latest,
+        "fleet_mw": _fleet_mw(history),
         "groups_monthly": _duration_groups(monthly),
         "leaderboard": json.loads(
             leaderboard.sort_values("total_rev_per_mw", ascending=False)
