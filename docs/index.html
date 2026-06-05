@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>HEN BESS — DA vs RT Backtest</title>
+<title>HEN BESS — DART vs RT Backtest</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <style>
   :root { --bg:#0f1419; --card:#1a2129; --txt:#e6edf3; --mut:#8b98a5; }
@@ -16,7 +16,6 @@
   .card { background:var(--card); border:1px solid #283039; border-radius:12px; padding:16px; }
   .card.full { grid-column:1 / -1; }
   h2 { margin:0 0 10px; font-size:12px; color:var(--mut); font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
-  /* fixed-height chart boxes so canvases never balloon */
   .chartbox { position:relative; height:240px; }
   .chartbox.tall { height:300px; }
   table { width:100%; border-collapse:collapse; font-size:13px; }
@@ -29,13 +28,13 @@
 </head>
 <body>
 <header>
-  <h1>HEN Battery Backtest — Day-Ahead vs Real-Time vs Ancillary Services</h1>
-  <div class="sub">HEN vs ERCOT peers, by storage duration · settled DA + RT energy + AS revenue · <span id="updated">loading…</span></div>
+  <h1>HEN Battery Backtest — DART vs RT (Energy + Ancillary Services)</h1>
+  <div class="sub">DART = DA award × (DA − RT price) · RT = RT award × RT price · HEN vs ERCOT peers · <span id="updated">loading…</span></div>
 </header>
 <div class="wrap">
   <div class="card full"><h2>Average $/MW by group, monthly</h2><div class="chartbox tall"><canvas id="line"></canvas></div></div>
-  <div class="card"><h2>HEN — YTD revenue mix (DA / RT / AS by duration)</h2><div class="chartbox"><canvas id="henPie"></canvas></div></div>
-  <div class="card"><h2>Peers — YTD revenue mix (DA / RT / AS by duration)</h2><div class="chartbox"><canvas id="peerPie"></canvas></div></div>
+  <div class="card"><h2>HEN — YTD revenue by stream ($)</h2><div class="chartbox"><canvas id="henBar"></canvas></div></div>
+  <div class="card"><h2>Peers — YTD revenue by stream ($)</h2><div class="chartbox"><canvas id="peerBar"></canvas></div></div>
   <div class="card full"><h2>Latest-month leaderboard ($/MW)</h2><div class="scroll"><div id="board"></div></div></div>
 </div>
 <script>
@@ -47,9 +46,10 @@ const STYLE = {
   "Peer 2hr": {c:"#ffb784", dash:[6,4]},
 };
 const label = g => g.replace("Hen","HEN").replace("Peer","Peers");
-// 6 pie slices: DA=blue, RT=orange, AS=green; 1hr bright, 2hr darker.
-const PIE_COLORS = ["#4f9dff", "#ff8c42", "#58c27d", "#2f6fcc", "#cc6a2f", "#2f8f57"];
-const PIE_LABELS = ["1hr DA", "1hr RT", "1hr AS", "2hr DA", "2hr RT", "2hr AS"];
+// Four revenue streams.
+const STREAMS = ["dart_energy", "rt_energy", "dart_as", "rt_as"];
+const STREAM_LABELS = ["DART Energy", "RT Energy", "DART AS", "RT AS"];
+const STREAM_COLORS = ["#4f9dff", "#ff8c42", "#58c27d", "#c678dd"];
 const NOASPECT = {responsive:true, maintainAspectRatio:false};
 
 fetch("dashboard.json").then(r=>r.json()).then(d=>{
@@ -71,29 +71,36 @@ fetch("dashboard.json").then(r=>r.json()).then(d=>{
     options:{...NOASPECT, plugins:{legend:{labels:{color:"#8b98a5",boxWidth:14}}},
       scales:{x:{ticks:{color:"#8b98a5"}},y:{ticks:{color:"#8b98a5",callback:fmt}}}}});
 
-  const sums = {};
-  gm.forEach(r=>{ const s=sums[r.group]||(sums[r.group]={da:0,rt:0,as:0});
-    s.da+=r.da_rev||0; s.rt+=r.rt_rev||0; s.as+=r.as_rev||0; });
+  // Sum the four streams per fleet (across both durations)
+  const fleet = {Hen:{}, Peer:{}};
+  STREAMS.forEach(s=>{ fleet.Hen[s]=0; fleet.Peer[s]=0; });
+  gm.forEach(r=>{ const f=r.group.startsWith("Hen")?"Hen":"Peer";
+    STREAMS.forEach(s=> fleet[f][s]+=(r[s]||0)); });
 
-  function pie(canvas, prefix){
-    const a = sums[prefix+" 1hr"]||{da:0,rt:0,as:0}, b = sums[prefix+" 2hr"]||{da:0,rt:0,as:0};
-    const data = [a.da, a.rt, a.as, b.da, b.rt, b.as];
-    const total = data.reduce((x,y)=>x+y,0) || 1;
-    new Chart(canvas,{type:"pie",
-      data:{labels:PIE_LABELS, datasets:[{data, backgroundColor:PIE_COLORS}]},
-      options:{...NOASPECT, plugins:{legend:{position:"right",labels:{color:"#8b98a5",boxWidth:12,font:{size:11}}},
-        tooltip:{callbacks:{label:c=>`${c.label}: ${fmt(c.raw)} (${(c.raw/total*100).toFixed(0)}%)`}}}}});
+  // Bar chart (not pie) so negative DART legs render below zero.
+  function bar(canvas, f){
+    const data = STREAMS.map(s=>fleet[f][s]);
+    const tot = data.reduce((x,y)=>x+y,0);
+    new Chart(canvas,{type:"bar",
+      data:{labels:STREAM_LABELS, datasets:[{data, backgroundColor:STREAM_COLORS}]},
+      options:{...NOASPECT, plugins:{legend:{display:false},
+        title:{display:true,text:"Total "+fmt(tot),color:"#8b98a5",font:{size:12}},
+        tooltip:{callbacks:{label:c=>fmt(c.raw)}}},
+        scales:{x:{ticks:{color:"#8b98a5"}},
+          y:{ticks:{color:"#8b98a5",callback:fmt},grid:{color:c=>c.tick.value===0?"#5a6b7a":"#283039"}}}}});
   }
-  pie(henPie, "Hen");
-  pie(peerPie, "Peer");
+  bar(henBar, "Hen");
+  bar(peerBar, "Peer");
 
   const rows = d.leaderboard || [];
-  let html="<table><tr><th>#</th><th>Battery</th><th>Owner</th><th>Dur</th><th>$/MW</th><th>DA $</th><th>RT $</th><th>AS $</th><th>Total $</th></tr>";
+  let html="<table><tr><th>#</th><th>Battery</th><th>Owner</th><th>Dur</th><th>$/MW</th>"
+         +"<th>DART E</th><th>RT E</th><th>DART AS</th><th>RT AS</th><th>Total $</th></tr>";
   rows.forEach((r,i)=>{ const hen=r.owner==="HEN";
     html+=`<tr><td>${i+1}</td><td class="${hen?'hen':''}">${r.name}</td>`+
           `<td>${r.owner}</td><td><span class="pill">${r.duration_class||''}</span></td>`+
-          `<td>${fmt(r.total_rev_per_mw)}</td><td>${fmt(r.da_rev)}</td>`+
-          `<td>${fmt(r.rt_rev)}</td><td>${fmt(r.as_rev)}</td><td>${fmt(r.total_rev)}</td></tr>`; });
+          `<td>${fmt(r.total_rev_per_mw)}</td><td>${fmt(r.dart_energy)}</td>`+
+          `<td>${fmt(r.rt_energy)}</td><td>${fmt(r.dart_as)}</td>`+
+          `<td>${fmt(r.rt_as)}</td><td>${fmt(r.total_rev)}</td></tr>`; });
   document.getElementById("board").innerHTML = html+"</table>";
 }).catch(()=>{document.getElementById("updated").textContent="error loading dashboard.json";});
 </script>
