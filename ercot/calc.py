@@ -1,11 +1,4 @@
-"""DA-vs-RT settlement revenue calc.
-
-Settlement model (standard ERCOT two-settlement decomposition):
-
-  DA revenue (hourly)  = DA_award_MW * DA_SPP
-  RT revenue (per 15m) = (RT_dispatch_MW - DA_award_MW) * RT_SPP * (interval_hours)
-  Total                = DA revenue + RT revenue   (RT is the imbalance/deviation)
-"""
+"""DA-vs-RT settlement revenue calc."""
 from __future__ import annotations
 
 import pandas as pd
